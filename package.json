@@ -8,5 +8,8 @@
   },
   "keywords": [],
   "author": "Oleksii Myshuniaiev",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
 }
