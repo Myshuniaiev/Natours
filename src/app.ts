@@ -1,11 +1,21 @@
-import express from 'express';
-const app = express();
-const port = 3000;
+import express, { Application } from "express";
+import morgan from "morgan";
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+import tourRouter from "./routes/tour";
+import userRouter from "./routes/user";
 
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
-});
+const app: Application = express();
+
+console.log(process.env.NODE_ENV);
+
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
+
+app.use("/api/v1/tours", tourRouter);
+app.use("/api/v1/users", userRouter);
+
+export default app;
