@@ -8,7 +8,6 @@ const morgan_1 = __importDefault(require("morgan"));
 const tour_1 = __importDefault(require("./routes/tour"));
 const user_1 = __importDefault(require("./routes/user"));
 const app = (0, express_1.default)();
-console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "development") {
     app.use((0, morgan_1.default)("dev"));
 }

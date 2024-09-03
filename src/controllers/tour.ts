@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
 
 // Extend the Request interface with ITour for the body
@@ -9,7 +9,24 @@ interface RequestWithBody<T> extends Request {
 // Handler to get all tours
 export const getTours = async (req: Request, res: Response): Promise<void> => {
   try {
-    const tours = await Tour.find();
+    const queryObj = { ...req.query };
+    const excludeFields = ["page", "sort", "limit", "fields"];
+    excludeFields.forEach((el) => delete queryObj[el]);
+
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    let query = Tour.find(JSON.parse(queryStr));
+
+    if (req.query.sort) {
+      const sortBy = (req.query.sort as string).split(",").join(" ");
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    const tours = await query;
+
     res
       .status(200)
       .json({ status: "success", results: tours.length, data: { tours } });
