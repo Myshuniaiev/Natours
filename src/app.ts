@@ -6,8 +6,6 @@ import userRouter from "./routes/user";
 
 const app: Application = express();
 
-console.log(process.env.NODE_ENV);
-
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
