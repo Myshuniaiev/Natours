@@ -1,10 +1,23 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
 
 // Extend the Request interface with ITour for the body
 interface RequestWithBody<T> extends Request {
   body: T;
 }
+
+// Handler to get top tours
+export const aliasTopTours = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { query } = req;
+  query.limit = "5";
+  query.sort = "-ratingAverage,price";
+  query.fields = "name,price,ratingAverage,summary,difficulty";
+  next();
+};
 
 // Handler to get all tours
 export const getTours = async (req: Request, res: Response): Promise<void> => {

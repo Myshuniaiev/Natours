@@ -3,6 +3,8 @@ import * as controller from "../controllers/tour";
 
 const router: Router = express.Router();
 
+router.route("/top-tours").get(controller.aliasTopTours, controller.getTours);
+
 router.route("/").get(controller.getTours).post(controller.createTour);
 
 router
