@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
+import APIFeatures from "../utils/apiFeatures";
 
-// Extend the Request interface with ITour for the body
+// Extend the Request interface with ITour for the body and query string
 interface RequestWithBody<T> extends Request {
   body: T;
 }
@@ -12,50 +13,21 @@ export const aliasTopTours = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { query } = req;
-  query.limit = "5";
-  query.sort = "-ratingAverage,price";
-  query.fields = "name,price,ratingAverage,summary,difficulty";
+  req.query.limit = "5";
+  req.query.sort = "-ratingAverage,price";
+  req.query.fields = "name,price,ratingAverage,summary,difficulty";
   next();
 };
 
 // Handler to get all tours
 export const getTours = async (req: Request, res: Response): Promise<void> => {
   try {
-    const queryObj = { ...req.query };
-    const excludeFields = ["page", "sort", "limit", "fields"];
-    excludeFields.forEach((el) => delete queryObj[el]);
-
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-    let query = Tour.find(JSON.parse(queryStr));
-
-    if (req.query.sort) {
-      const sortBy = (req.query.sort as string).split(",").join(" ");
-      query = query.sort(sortBy + " _id");
-    } else {
-      query = query.sort("-createdAt _id");
-    }
-
-    if (req.query.fields) {
-      const fields = (req.query.fields as string).split(",").join(" ");
-      query = query.select(fields);
-    } else {
-      query = query.select("-__v");
-    }
-
-    const page = Math.max(Number(req.query.page) || 1, 1);
-    const limit = Math.max(Number(req.query.limit) || 100, 1);
-    const skip = (page - 1) * limit;
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) throw new Error("This page does not exist");
-    }
-
-    const tours = await query;
+    const features = new APIFeatures<ITour>(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await features.query;
 
     res
       .status(200)
@@ -68,8 +40,7 @@ export const getTours = async (req: Request, res: Response): Promise<void> => {
 // Handler to get a specific tour by ID
 export const getTour = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { params } = req;
-    const tour = await Tour.findById(params.id);
+    const tour = await Tour.findById(req.params.id);
     res.status(200).json({ status: "success", data: { tour } });
   } catch (err) {
     res.status(400).json({ status: "fail", message: err });
@@ -89,14 +60,13 @@ export const createTour = async (
   }
 };
 
-// Handler to update a tour (not yet defined)
+// Handler to update a tour
 export const updateTour = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { params, body } = req;
-    const tour = await Tour.findByIdAndUpdate(params.id, body, {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -106,14 +76,13 @@ export const updateTour = async (
   }
 };
 
-// Handler to delete a tour (not yet defined)
+// Handler to delete a tour
 export const deleteTour = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const { params } = req;
-    await Tour.findByIdAndDelete(params.id);
+    await Tour.findByIdAndDelete(req.params.id);
     res.status(200).json({ status: "success" });
   } catch (err) {
     res.status(400).json({ status: "fail", message: err });
