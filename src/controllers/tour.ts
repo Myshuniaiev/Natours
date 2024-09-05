@@ -20,9 +20,9 @@ export const getTours = async (req: Request, res: Response): Promise<void> => {
 
     if (req.query.sort) {
       const sortBy = (req.query.sort as string).split(",").join(" ");
-      query = query.sort(sortBy);
+      query = query.sort(sortBy + " _id");
     } else {
-      query = query.sort("-createdAt");
+      query = query.sort("-createdAt _id");
     }
 
     if (req.query.fields) {
@@ -30,6 +30,16 @@ export const getTours = async (req: Request, res: Response): Promise<void> => {
       query = query.select(fields);
     } else {
       query = query.select("-__v");
+    }
+
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.max(Number(req.query.limit) || 100, 1);
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error("This page does not exist");
     }
 
     const tours = await query;
