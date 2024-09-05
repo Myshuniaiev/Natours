@@ -5,6 +5,8 @@ const router: Router = express.Router();
 
 router.route("/top-tours").get(controller.aliasTopTours, controller.getTours);
 
+router.route("/tour-stats").get(controller.getTourStats);
+
 router.route("/").get(controller.getTours).post(controller.createTour);
 
 router
