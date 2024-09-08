@@ -17,6 +17,7 @@ export interface ITour extends Document {
   imageCover: string;
   images: string[];
   startDates: Date[];
+  secretTour: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -79,6 +80,10 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     startDates: {
       type: [Date],
     },
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     strict: true,
@@ -94,6 +99,13 @@ tourSchema.virtual("durationWeeks").get(function () {
 
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  const query = this as mongoose.Query<any, ITour>;
+  // @ts-ignore
+  query.find({ secretTour: { $ne: true } });
   next();
 });
 
