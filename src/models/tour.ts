@@ -109,6 +109,11 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+tourSchema.pre("aggregate", function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  next();
+});
+
 // Create the model with a generic type argument
 const Tour: Model<ITour> = mongoose.model<ITour>("Tour", tourSchema);
 
