@@ -1,8 +1,10 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import slugify from "slugify";
 
 // Define an interface for the Tour document
 export interface ITour extends Document {
   name: string;
+  slug?: string;
   duration: number;
   maxGroupSize: number;
   difficulty: "easy" | "medium" | "difficult";
@@ -27,6 +29,9 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       required: [true, "A tour must have a name"],
       unique: true,
       trim: true,
+    },
+    slug: {
+      type: String,
     },
     duration: {
       type: Number,
@@ -85,6 +90,11 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
 
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
+});
+
+tourSchema.pre("save", function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
 });
 
 // Create the model with a generic type argument
