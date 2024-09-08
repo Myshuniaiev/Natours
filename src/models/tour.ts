@@ -75,8 +75,17 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       type: [Date],
     },
   },
-  { strict: true, timestamps: true }
+  {
+    strict: true,
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+tourSchema.virtual("durationWeeks").get(function () {
+  return this.duration / 7;
+});
 
 // Create the model with a generic type argument
 const Tour: Model<ITour> = mongoose.model<ITour>("Tour", tourSchema);
