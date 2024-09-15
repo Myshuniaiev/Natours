@@ -1,3 +1,10 @@
+export interface ExtendedError extends AppError {
+  path?: string;
+  value?: string;
+  kind?: string;
+  name: string; // Error name like "CastError"
+}
+
 class AppError extends Error {
   status: string;
   statusCode: number;
