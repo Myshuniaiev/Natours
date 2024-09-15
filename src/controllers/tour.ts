@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
+
 import APIFeatures from "../utils/apiFeatures";
 import catchAsync from "../utils/catchAsync";
+import AppError from "../utils/appError";
 
 // Extend the Request interface with ITour for the body and query string
 interface RequestWithBody<T> extends Request {
@@ -43,6 +45,9 @@ export const getTours = catchAsync(
 export const getTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findById(req.params.id);
+    if (!tour) {
+      return next(new AppError("No tour found with that ID", 404));
+    }
     res.status(200).json({ status: "success", data: { tour } });
   }
 );
@@ -66,6 +71,9 @@ export const updateTour = catchAsync(
       new: true,
       runValidators: true,
     });
+    if (!tour) {
+      return next(new AppError("No tour found with that ID", 404));
+    }
     res.status(200).json({ status: "success", data: { tour } });
   }
 );
@@ -73,7 +81,10 @@ export const updateTour = catchAsync(
 // Handler to delete a tour
 export const deleteTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    await Tour.findByIdAndDelete(req.params.id);
+    const tour = await Tour.findByIdAndDelete(req.params.id);
+    if (!tour) {
+      return next(new AppError("No tour found with that ID", 404));
+    }
     res.status(200).json({ status: "success" });
   }
 );
