@@ -9,11 +9,11 @@ interface RequestWithBody<T> extends Request {
 }
 
 // Handler to get top tours
-export const aliasTopTours = async (
+export const aliasTopTours = (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   req.query.limit = "5";
   req.query.sort = "-ratingAverage,price";
   req.query.fields = "name,price,ratingAverage,summary,difficulty";
