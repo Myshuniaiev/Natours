@@ -4,10 +4,11 @@
   "description": "Secure user authentication and authorization, Comprehensive account and data management, Easy tour booking and integrated review system, Secure payment processing through RESTful APIs",
   "main": "dist/server.js",
   "scripts": {
-    "start": "NODE_ENV=production node dist/server.js",
+    "build": "npx tsc",
     "dev": "nodemon --exec ts-node src/server.ts",
-    "lint": "eslint . --ext .ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "NODE_ENV=production node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [],
   "author": "Oleksii Myshuniaiev",
