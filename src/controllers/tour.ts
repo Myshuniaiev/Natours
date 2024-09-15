@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
 import APIFeatures from "../utils/apiFeatures";
+import catchAsync from "../utils/catchAsync";
 
 // Extend the Request interface with ITour for the body and query string
 interface RequestWithBody<T> extends Request {
@@ -20,80 +21,65 @@ export const aliasTopTours = async (
 };
 
 // Handler to get all tours
-export const getTours = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const getTours = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .paginate();
+
     const tours = await features.query;
 
-    res
-      .status(200)
-      .json({ status: "success", results: tours.length, data: { tours } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
+    res.status(200).json({
+      status: "success",
+      results: tours.length,
+      data: { tours },
+    });
   }
-};
+);
 
 // Handler to get a specific tour by ID
-export const getTour = async (req: Request, res: Response): Promise<void> => {
-  try {
+export const getTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findById(req.params.id);
     res.status(200).json({ status: "success", data: { tour } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
 
 // Handler to create a new tour
-export const createTour = async (
-  req: RequestWithBody<ITour>,
-  res: Response
-): Promise<void> => {
-  try {
+export const createTour = catchAsync(
+  async (
+    req: RequestWithBody<ITour>,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({ status: "success", data: { tour: newTour } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
 
 // Handler to update a tour
-export const updateTour = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+export const updateTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
     res.status(200).json({ status: "success", data: { tour } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
 
 // Handler to delete a tour
-export const deleteTour = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+export const deleteTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     await Tour.findByIdAndDelete(req.params.id);
     res.status(200).json({ status: "success" });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
 
-export const getTourStats = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+export const getTourStats = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const stats = await Tour.aggregate([
       { $match: { ratingsAverage: { $gte: 4.5 } } },
       {
@@ -111,18 +97,12 @@ export const getTourStats = async (
         $sort: { avgPrice: 1 },
       },
     ]);
-
     res.status(200).json({ status: "success", data: { stats } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
 
-export const getMonthlyPlan = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+export const getMonthlyPlan = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const year = Number(req.params.year);
     const stats = await Tour.aggregate([
       { $unwind: "$startDates" },
@@ -145,11 +125,8 @@ export const getMonthlyPlan = async (
       { $project: { _id: 0 } },
       { $sort: { numTourStats: -1 } },
     ]);
-
     res
       .status(200)
       .json({ status: "success", results: stats.length, data: { stats } });
-  } catch (err) {
-    res.status(400).json({ status: "fail", message: err });
   }
-};
+);
