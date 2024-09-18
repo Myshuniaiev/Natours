@@ -1,6 +1,9 @@
+// TODO Find a better way of storing error types
 export interface ExtendedError extends AppError {
   path?: string;
   value?: string;
+  code?: number;
+  errorResponse?: any;
   kind?: string;
   name: string; // Error name like "CastError"
 }
