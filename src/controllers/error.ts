@@ -14,6 +14,13 @@ const handleDuplicatedFieldsDB = (err: ExtendedError) => {
   return new AppError(message, 400);
 };
 
+const handleValidationErrorDB = (err: ExtendedError) => {
+  // console.log(err.error)
+  const errors = Object.values(err.errors).map((el) => el.message);
+  const message = `Invalid Validation Error. ${errors.join(". ")}`;
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err: AppError, res: Response) =>
   res.status(err.statusCode).json({
     status: err.status,
@@ -38,7 +45,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
 };
 
 export const globalErrorHandler = (
-  err: AppError,
+  err: AppError | ExtendedError,
   req: Request,
   res: Response,
   next: NextFunction
@@ -51,11 +58,12 @@ export const globalErrorHandler = (
   } else if (process.env.NODE_ENV === "production") {
     let error: AppError | ExtendedError = { ...err };
 
-    if ((error as ExtendedError).name === "CastError") {
+    if ((err as ExtendedError).name === "CastError") {
       error = handleCastErrorDB(error);
-    }
-    if ((error as ExtendedError).code === 11000) {
+    } else if ((err as ExtendedError).code === 11000) {
       error = handleDuplicatedFieldsDB(error);
+    } else if ((err as ExtendedError).name === "ValidationError") {
+      error = handleValidationErrorDB(error);
     }
 
     sendErrorProd(error, res);

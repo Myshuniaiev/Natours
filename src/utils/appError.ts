@@ -4,8 +4,9 @@ export interface ExtendedError extends AppError {
   value?: string;
   code?: number;
   errorResponse?: any;
+  errors?: any[];
   kind?: string;
-  name: string; // Error name like "CastError"
+  name: string; // "CastError" | "ValidationError";
 }
 
 class AppError extends Error {
