@@ -1,12 +1,13 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import validator from "validator";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   name: string;
   email: string;
   photo: string;
   password: string;
-  passwordConfirm: string;
+  passwordConfirm: string | undefined;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema(
@@ -33,6 +34,12 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     passwordConfirm: {
       type: String,
       required: [true, "A user must have a confirm password"],
+      validate: {
+        validator: function (el) {
+          return el === this.password;
+        },
+        message: "Confirm password should be the same as the password field",
+      },
     },
   },
   {
@@ -42,6 +49,16 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
+  next();
+});
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 
