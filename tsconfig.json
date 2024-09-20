@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "types": ["node", "express"],
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
@@ -7,5 +9,6 @@
     "sourceMap": true,
     "outDir": "dist"
   },
-  "lib": ["es2015"]
+  "lib": ["es2015"],
+  "include": ["src/**/*", "src/types/**/*"]
 }
