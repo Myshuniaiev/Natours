@@ -1,18 +1,19 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import Tour, { ITour } from "../models/tour";
+import { IRequest } from "../types/types";
 
 import APIFeatures from "../utils/apiFeatures";
 import catchAsync from "../utils/catchAsync";
 import AppError from "../utils/appError";
 
-// Extend the Request interface with ITour for the body and query string
-interface RequestWithBody<T> extends Request {
+// Extend the IRequest interface with ITour for the body and query string
+interface IRequestWithBody<T> extends IRequest {
   body: T;
 }
 
 // Handler to get top tours
 export const aliasTopTours = (
-  req: Request,
+  req: IRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -24,7 +25,7 @@ export const aliasTopTours = (
 
 // Handler to get all tours
 export const getTours = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
       .filter()
       .sort()
@@ -43,7 +44,7 @@ export const getTours = catchAsync(
 
 // Handler to get a specific tour by ID
 export const getTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findById(req.params.id);
     if (!tour) {
       return next(new AppError("No tour found with that ID", 404));
@@ -55,7 +56,7 @@ export const getTour = catchAsync(
 // Handler to create a new tour
 export const createTour = catchAsync(
   async (
-    req: RequestWithBody<ITour>,
+    req: IRequestWithBody<ITour>,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -66,7 +67,7 @@ export const createTour = catchAsync(
 
 // Handler to update a tour
 export const updateTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -80,7 +81,7 @@ export const updateTour = catchAsync(
 
 // Handler to delete a tour
 export const deleteTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findByIdAndDelete(req.params.id);
     if (!tour) {
       return next(new AppError("No tour found with that ID", 404));
@@ -90,7 +91,7 @@ export const deleteTour = catchAsync(
 );
 
 export const getTourStats = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const stats = await Tour.aggregate([
       { $match: { ratingsAverage: { $gte: 4.5 } } },
       {
@@ -113,7 +114,7 @@ export const getTourStats = catchAsync(
 );
 
 export const getMonthlyPlan = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
     const year = Number(req.params.year);
     const stats = await Tour.aggregate([
       { $unwind: "$startDates" },

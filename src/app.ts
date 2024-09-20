@@ -1,4 +1,4 @@
-import express, { Application, Request, Response, NextFunction } from "express";
+import express, { Application, Response, NextFunction } from "express";
 import morgan from "morgan";
 import path from "path";
 
@@ -7,6 +7,7 @@ import AppError from "./utils/appError";
 import tourRouter from "./routes/tour";
 import userRouter from "./routes/user";
 import { globalErrorHandler } from "./controllers/error";
+import { IRequest } from "./types/types";
 
 const app: Application = express();
 
@@ -24,7 +25,7 @@ app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 
 // Handle undefined routes with custom error
-app.all("*", (req: Request, res: Response, next: NextFunction) => {
+app.all("*", (req: IRequest, res: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

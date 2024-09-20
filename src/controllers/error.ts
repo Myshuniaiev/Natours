@@ -1,5 +1,6 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import AppError, { ExtendedError } from "../utils/appError";
+import { IRequest } from "../types/types";
 
 const handleCastErrorDB = (err: ExtendedError) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
@@ -52,7 +53,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
 
 export const globalErrorHandler = (
   err: AppError | ExtendedError,
-  req: Request,
+  req: IRequest,
   res: Response,
   next: NextFunction
 ) => {
