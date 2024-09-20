@@ -1,4 +1,4 @@
-# 🌍 Mitravel - Explore the World with Us 🧳
+# 🌍 About the project
 
 Mitravel is a complete travel booking application built with Node.js. It allows users to book tours, manage their accounts, leave reviews, and securely process payments.
 
