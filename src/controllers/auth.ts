@@ -1,3 +1,4 @@
+import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import catchAsync from "../utils/catchAsync";
 import User, { IUser } from "../models/user";
@@ -49,5 +50,29 @@ export const login = catchAsync(
 
     const token = signToken(user._id);
     res.status(200).json({ status: "success", token });
+  }
+);
+
+export const protect = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    let token: string | undefined;
+    const authorization = req.headers.authorization;
+    if (authorization && authorization.startsWith("Bearer")) {
+      token = authorization.split(" ")[1];
+    }
+
+    if (!token) {
+      return next(
+        new AppError(
+          "You are not logged in. Please log in to gain access.",
+          401
+        )
+      );
+    }
+
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    console.log(decoded);
+
+    next();
   }
 );

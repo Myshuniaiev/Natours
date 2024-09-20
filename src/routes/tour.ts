@@ -1,20 +1,26 @@
 import express, { Router } from "express";
-import * as controller from "../controllers/tour";
+import * as tourController from "../controllers/tour";
+import * as authController from "../controllers/auth";
 
 const router: Router = express.Router();
 
-router.route("/top-tours").get(controller.aliasTopTours, controller.getTours);
+router
+  .route("/top-tours")
+  .get(tourController.aliasTopTours, tourController.getTours);
 
-router.route("/tour-stats").get(controller.getTourStats);
+router.route("/tour-stats").get(tourController.getTourStats);
 
-router.route("/monthly-plan/:year").get(controller.getMonthlyPlan);
+router.route("/monthly-plan/:year").get(tourController.getMonthlyPlan);
 
-router.route("/").get(controller.getTours).post(controller.createTour);
+router
+  .route("/")
+  .get(authController.protect, tourController.getTours)
+  .post(tourController.createTour);
 
 router
   .route("/:id")
-  .get(controller.getTour)
-  .patch(controller.updateTour)
-  .delete(controller.deleteTour);
+  .get(tourController.getTour)
+  .patch(tourController.updateTour)
+  .delete(tourController.deleteTour);
 
 export default router;
