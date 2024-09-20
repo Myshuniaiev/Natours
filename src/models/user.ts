@@ -8,6 +8,11 @@ export interface IUser extends Document {
   photo: string;
   password: string;
   passwordConfirm: string | undefined;
+
+  correctPassword(
+    candidatePassword: string,
+    userPassword: string
+  ): Promise<boolean>;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema(
@@ -30,6 +35,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       type: String,
       required: [true, "A user must have a password"],
       minlength: 8,
+      select: false,
     },
     passwordConfirm: {
       type: String,
@@ -59,6 +65,13 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 

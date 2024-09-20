@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import catchAsync from "../utils/catchAsync";
+import APIFeatures from "../utils/apiFeatures";
+import User, { IUser } from "../models/user";
 
 interface Tour {
   _id: string;
@@ -24,11 +27,23 @@ export const checkId = (
   next();
 };
 
-export const getUsers = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+export const getUsers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const features = new APIFeatures<IUser>(User.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    const users = await features.query;
+
+    res.status(200).json({
+      status: "success",
+      results: users.length,
+      data: { users },
+    });
+  }
+);
 
 export const getUser = (req: Request, res: Response): void => {
   res

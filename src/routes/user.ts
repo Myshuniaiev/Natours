@@ -5,6 +5,7 @@ import * as authController from "../controllers/auth";
 const router: Router = express.Router();
 
 router.post("/signup", authController.signup);
+router.post("/login", authController.login);
 
 router.param("id", userController.checkId);
 router.route("/").get(userController.getUsers).post(userController.createUser);
