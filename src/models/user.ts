@@ -3,16 +3,20 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
+  // properties
   name: string;
   email: string;
   photo: string;
   password: string;
   passwordConfirm: string | undefined;
+  passwordChangedAt: Date;
 
+  //  methods
   correctPassword(
     candidatePassword: string,
     userPassword: string
   ): Promise<boolean>;
+  changedPasswordAfter(JwtTimestamp: number): Promise<boolean>;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema(
@@ -47,6 +51,9 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
         message: "Confirm password should be the same as the password field",
       },
     },
+    passwordChangedAt: {
+      type: Date,
+    },
   },
   {
     strict: true,
@@ -66,11 +73,23 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// methods
 userSchema.methods.correctPassword = async function (
   candidatePassword: string,
   userPassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+userSchema.methods.changedPasswordAfter = async function (
+  JwtTimestamp: number
+): Promise<boolean> {
+  if (!this.passwordChangedAt) {
+    return false;
+  }
+
+  const changedPassword = Math.floor(this.passwordChangedAt.getTime() / 1000);
+
+  return JwtTimestamp < changedPassword;
 };
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
