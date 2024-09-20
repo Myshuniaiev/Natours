@@ -2,10 +2,10 @@ import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import catchAsync from "../utils/catchAsync";
 import User, { IUser } from "../models/user";
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import AppError from "../utils/appError";
 import { Document } from "mongoose";
-import { IRequest } from "../types/types";
+import { IRequestWithUser } from "../types/types";
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -14,7 +14,7 @@ const signToken = (id) => {
 };
 
 export const signup = catchAsync(
-  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = await User.create({
       name: req.body.name,
       email: req.body.email,
@@ -32,7 +32,7 @@ export const signup = catchAsync(
 );
 
 export const login = catchAsync(
-  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -55,7 +55,11 @@ export const login = catchAsync(
 );
 
 export const protect = catchAsync(
-  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
+  async (
+    req: IRequestWithUser,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     let token: string | undefined;
     const authorization = req.headers.authorization;
     if (authorization && authorization.startsWith("Bearer")) {

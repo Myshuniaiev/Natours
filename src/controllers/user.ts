@@ -1,8 +1,7 @@
-import { Response, NextFunction } from "express";
+import { Response, NextFunction, Request } from "express";
 import catchAsync from "../utils/catchAsync";
 import APIFeatures from "../utils/apiFeatures";
 import User, { IUser } from "../models/user";
-import { IRequest } from "../types/types";
 
 interface Tour {
   _id: string;
@@ -12,7 +11,7 @@ interface Tour {
 const tours: Tour[] = []; // This should be populated with tour data
 
 export const checkId = (
-  req: IRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
   value: string
@@ -29,7 +28,7 @@ export const checkId = (
 };
 
 export const getUsers = catchAsync(
-  async (req: IRequest, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const features = new APIFeatures<IUser>(User.find(), req.query)
       .filter()
       .sort()
@@ -46,25 +45,25 @@ export const getUsers = catchAsync(
   }
 );
 
-export const getUser = (req: IRequest, res: Response): void => {
+export const getUser = (req: Request, res: Response): void => {
   res
     .status(500)
     .json({ status: "error", message: "This route is not yet defined." });
 };
 
-export const createUser = (req: IRequest, res: Response): void => {
+export const createUser = (req: Request, res: Response): void => {
   res
     .status(500)
     .json({ status: "error", message: "This route is not yet defined." });
 };
 
-export const updateUser = (req: IRequest, res: Response): void => {
+export const updateUser = (req: Request, res: Response): void => {
   res
     .status(500)
     .json({ status: "error", message: "This route is not yet defined." });
 };
 
-export const deleteUser = (req: IRequest, res: Response): void => {
+export const deleteUser = (req: Request, res: Response): void => {
   res
     .status(500)
     .json({ status: "error", message: "This route is not yet defined." });
