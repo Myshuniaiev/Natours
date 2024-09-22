@@ -20,6 +20,7 @@ export const signup = catchAsync(
       email: req.body.email,
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
+      role: req.body.role,
     });
 
     const token = signToken(user._id);
@@ -99,3 +100,23 @@ export const protect = catchAsync(
     next();
   }
 );
+
+export const restrictTo = (...roles) =>
+  catchAsync(
+    async (
+      req: IRequestWithUser,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      if (!roles.includes(req.user.role)) {
+        return next(
+          new AppError(
+            "You do not have permission to perform this action.",
+            403
+          )
+        );
+      }
+
+      next();
+    }
+  );

@@ -2,6 +2,12 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 
+export enum UserRole {
+  USER = "user",
+  GUIDE = "guide",
+  LEAD_GUIDE = "lead-guide",
+  ADMIN = "admin",
+}
 export interface IUser extends Document {
   // properties
   name: string;
@@ -10,6 +16,7 @@ export interface IUser extends Document {
   password: string;
   passwordConfirm: string | undefined;
   passwordChangedAt: Date;
+  role: UserRole;
 
   //  methods
   correctPassword(
@@ -34,6 +41,11 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     },
     photo: {
       type: String,
+    },
+    role: {
+      type: String,
+      enum: Object.values(UserRole),
+      default: UserRole.USER,
     },
     password: {
       type: String,
