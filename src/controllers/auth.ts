@@ -209,9 +209,6 @@ export const updatePassword = catchAsync(
     if (!isPasswordCorrect) {
       return next(new AppError("Your current password is wrong.", 401));
     }
-    if (req.body.password !== req.body.passwordConfirm) {
-      return next(new AppError("Please provide the same password and confirm password.", 401));
-    }
 
     user.password = req.body.password;
     user.passwordConfirm = req.body.passwordConfirm;
