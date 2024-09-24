@@ -122,6 +122,13 @@ userSchema.methods.createPasswordResetToken = function () {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
   return resetToken;
 };
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) {
+    return next();
+  }
+  this.passwordChangedAt = new Date(Date.now() - 1000);
+  next();
+});
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 
