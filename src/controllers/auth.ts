@@ -159,11 +159,39 @@ export const forgotPassword = async (
   }
 };
 
-export const resetPassword = (
-  req: IRequestWithUser,
-  res: Response,
-  next: NextFunction
-) => {
-  const hashedToken = crypto.createHash('sha256').update(req.params.token);
-  next();
-};
+export const resetPassword = catchAsync(
+  async (
+    req: IRequestWithUser,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return next(new AppError("Token is invalid or expired˝.", 400));
+    }
+
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    const token = signToken(user._id);
+    res.status(201).json({
+      status: "success",
+      token,
+    });
+
+    next();
+  }
+);
