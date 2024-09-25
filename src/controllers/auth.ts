@@ -186,8 +186,6 @@ export const resetPassword = catchAsync(
     await user.save();
 
     createAndSendToken(user, 201, res);
-
-    next();
   }
 );
 
@@ -216,7 +214,5 @@ export const updatePassword = catchAsync(
     await user.save();
 
     createAndSendToken(user, 201, res);
-
-    next();
   }
 );
