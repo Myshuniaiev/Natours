@@ -15,6 +15,8 @@ router.patch(
   authController.updatePassword
 );
 
+router.patch("/updateMe", authController.protect, userController.updateMe);
+
 router.param("id", userController.checkId);
 router.route("/").get(userController.getUsers).post(userController.createUser);
 
