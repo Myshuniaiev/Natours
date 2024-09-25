@@ -85,6 +85,21 @@ export const updateMe = catchAsync(
   }
 );
 
+export const deleteMe = catchAsync(
+  async (
+    req: IRequestWithUser,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    await User.findByIdAndUpdate(req.user.id, { active: false });
+
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  }
+);
+
 export const getUser = (req: Request, res: Response): void => {
   res
     .status(500)

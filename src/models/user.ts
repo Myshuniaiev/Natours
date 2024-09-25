@@ -14,12 +14,13 @@ export interface IUser extends Document {
   name: string;
   email: string;
   photo: string;
+  role: UserRole;
   password: string;
   passwordConfirm: string | undefined;
   passwordChangedAt: Date;
   passwordResetToken: string;
   passwordResetExpires: Date;
-  role: UserRole;
+  active: boolean;
 
   //  methods
   correctPassword(
@@ -76,6 +77,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
     passwordResetExpires: {
       type: Date,
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     strict: true,
@@ -92,6 +97,12 @@ userSchema.pre("save", async function (next) {
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+  next();
+});
+userSchema.pre(/^find/, function (next) {
+  const query = this as mongoose.Query<any, IUser>;
+  // @ts-ignore
+  query.find({ active: { $ne: false } });
   next();
 });
 
