@@ -1,15 +1,30 @@
 import express, { Router } from "express";
-import * as controller from "../controllers/user";
+import * as userController from "../controllers/user";
+import * as authController from "../controllers/auth";
 
 const router: Router = express.Router();
 
-router.param("id", controller.checkId);
-router.route("/").get(controller.getUsers).post(controller.createUser);
+router.post("/signup", authController.signup);
+router.post("/login", authController.login);
+
+router.post("/forgotPassword", authController.forgotPassword);
+router.patch("/resetPassword/:token", authController.resetPassword);
+router.patch(
+  "/updatePassword",
+  authController.protect,
+  authController.updatePassword
+);
+
+router.patch("/updateMe", authController.protect, userController.updateMe);
+router.delete("/deleteMe", authController.protect, userController.deleteMe);
+
+router.param("id", userController.checkId);
+router.route("/").get(userController.getUsers).post(userController.createUser);
 
 router
   .route("/:id")
-  .get(controller.getUser)
-  .patch(controller.updateUser)
-  .delete(controller.deleteUser);
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser);
 
 export default router;

@@ -21,13 +21,21 @@ const handleValidationErrorDB = (err: ExtendedError) => {
   return new AppError(message, 400);
 };
 
-const sendErrorDev = (err: AppError, res: Response) =>
+const handleJwtError = () =>
+  new AppError("Invalid token. Please log in again.", 401);
+
+const handleJwtTokenExpiredError = () =>
+  new AppError("Token has expired. Please log in again.", 401);
+
+const sendErrorDev = (err: AppError, res: Response) => {
+  console.log("Error: 💥", err);
   res.status(err.statusCode).json({
     status: err.status,
     error: err,
     message: err.message,
     stack: err.stack,
   });
+};
 
 const sendErrorProd = (err: AppError, res: Response) => {
   if (err.isOperational) {
@@ -64,8 +72,17 @@ export const globalErrorHandler = (
       error = handleDuplicatedFieldsDB(error);
     } else if ((err as ExtendedError).name === "ValidationError") {
       error = handleValidationErrorDB(error);
+    } else if ((err as ExtendedError).name === "JsonWebTokenError") {
+      error = handleJwtError();
+    } else if ((err as ExtendedError).name === "TokenExpiredError") {
+      error = handleJwtTokenExpiredError();
     }
 
     sendErrorProd(error, res);
+  } else {
+    res.status(500).json({
+      error:
+        "NODE_ENV is not defined. Please check your environment configuration.",
+    });
   }
 };

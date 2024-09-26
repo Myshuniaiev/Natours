@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import Tour, { ITour } from "../models/tour";
-
 import APIFeatures from "../utils/apiFeatures";
 import catchAsync from "../utils/catchAsync";
 import AppError from "../utils/appError";
+import { IRequestWithUser } from "../types/types";
 
-// Extend the Request interface with ITour for the body and query string
-interface RequestWithBody<T> extends Request {
+// Extend the IRequest interface with ITour for the body and query string
+interface IRequestWithBody<T> extends Request {
   body: T;
 }
 
@@ -24,7 +24,11 @@ export const aliasTopTours = (
 
 // Handler to get all tours
 export const getTours = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (
+    req: IRequestWithUser,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
       .filter()
       .sort()
@@ -55,7 +59,7 @@ export const getTour = catchAsync(
 // Handler to create a new tour
 export const createTour = catchAsync(
   async (
-    req: RequestWithBody<ITour>,
+    req: IRequestWithBody<ITour>,
     res: Response,
     next: NextFunction
   ): Promise<void> => {
@@ -85,7 +89,9 @@ export const deleteTour = catchAsync(
     if (!tour) {
       return next(new AppError("No tour found with that ID", 404));
     }
-    res.status(200).json({ status: "success" });
+    res
+      .status(200)
+      .json({ status: "success", message: "The tour has been deleted." });
   }
 );
 
