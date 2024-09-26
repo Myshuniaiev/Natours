@@ -1,6 +1,7 @@
 import express, { Application, Response, NextFunction, Request } from "express";
 import morgan from "morgan";
 import path from "path";
+import { rateLimit } from "express-rate-limit";
 
 import AppError from "./utils/appError";
 
@@ -14,6 +15,16 @@ const app: Application = express();
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 60 minutes
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  message: "Too many requests from this IP, please try again later",
+  standardHeaders: "draft-7", // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  legacyHeaders: false,
+});
+
+app.use("/api", limiter);
 
 // Parse JSON bodies and serve static files
 app.use(express.json());
