@@ -2,7 +2,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { promisify } from "util";
 import { Document } from "mongoose";
-import { NextFunction, Request, Response } from "express";
+import { CookieOptions, NextFunction, Request, Response } from "express";
 
 import User, { IUser } from "../models/user";
 
@@ -12,10 +12,25 @@ import catchAsync from "../utils/catchAsync";
 
 import { IRequestWithUser } from "../types/types";
 
-const createAndSendToken = (user, statusCode, res) => {
+const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRATION_TIME,
   });
+  const cookieOptions: CookieOptions = {
+    expires: new Date(
+      Date.now() +
+        parseInt(process.env.JWT_COOKIE_EXPIRATION_TIME) * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    cookieOptions.secure = true;
+  }
+
+  user.password = undefined;
+
+  res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
     status: "success",
     token,
