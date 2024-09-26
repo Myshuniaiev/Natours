@@ -5,6 +5,7 @@ import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss";
+import hpp from "hpp";
 
 import AppError from "./utils/appError";
 import tourRouter from "./routes/tour";
@@ -63,6 +64,20 @@ app.use(sanitizeInput);
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// Prevent parameter pollution
+app.use(
+  hpp({
+    whitelist: [
+      "duration",
+      "maxGroupSize",
+      "difficulty",
+      "ratingsAverage",
+      "ratingQuantity",
+      "price",
+    ],
+  })
+);
 
 // API routes (separated by feature for better modularity)
 app.use("/api/v1/tours", tourRouter); // Routes related to tours
