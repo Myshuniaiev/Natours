@@ -3,6 +3,8 @@ import morgan from "morgan";
 import path from "path";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss";
 
 import AppError from "./utils/appError";
 import tourRouter from "./routes/tour";
@@ -33,6 +35,31 @@ app.use("/api", limiter);
 
 // Middleware to parse incoming JSON payloads
 app.use(express.json({ limit: "10kb" }));
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
+  const sanitize = (value: any) => {
+    if (typeof value === "string") {
+      return xss(value);
+    } else if (typeof value === "object" && value !== null) {
+      for (const key in value) {
+        value[key] = sanitize(value[key]);
+      }
+    }
+    return value;
+  };
+
+  req.body = sanitize(req.body);
+  req.query = sanitize(req.query);
+  req.params = sanitize(req.params);
+
+  next();
+};
+
+app.use(sanitizeInput);
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, "public")));
