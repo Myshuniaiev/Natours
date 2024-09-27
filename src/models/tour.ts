@@ -2,6 +2,16 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 import slugify from "slugify";
 import validator from "validator";
 
+export interface ILocation {
+  type: LocationType;
+  coordinates: number[];
+  address: string;
+  description: string;
+}
+export enum LocationType {
+  POINT = "Point",
+}
+
 // Define an interface for the Tour document
 export interface ITour extends Document {
   name: string;
@@ -21,6 +31,8 @@ export interface ITour extends Document {
   secretTour: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  startLocation: ILocation;
+  locations: (ILocation & { day: number })[];
 }
 
 // Define the schema with TypeScript type annotations
@@ -103,6 +115,40 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      type: {
+        type: String,
+        enum: Object.values(LocationType),
+        default: LocationType.POINT,
+      },
+      coordinates: {
+        type: [Number],
+      },
+      address: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          enum: Object.values(LocationType),
+          default: LocationType.POINT,
+        },
+        coordinates: {
+          type: [Number],
+        },
+        address: {
+          type: String,
+        },
+        description: {
+          type: String,
+        },
+      },
+    ],
   },
   {
     strict: true,
