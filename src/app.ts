@@ -7,10 +7,10 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss";
 import hpp from "hpp";
 
-import AppError from "./utils/appError";
-import tourRouter from "./routes/tour";
-import userRouter from "./routes/user";
-import { globalErrorHandler } from "./controllers/error";
+import AppError from "@utils/appError";
+import tourRouter from "@routes/tour";
+import userRouter from "@routes/user";
+import { globalErrorHandler } from "@controllers/error";
 
 const app: Application = express();
 
@@ -41,7 +41,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(mongoSanitize());
 
 // Data sanitization against XSS
-const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
+const sanitizeInput = (req: Request, _res: Response, next: NextFunction) => {
   const sanitize = (value: any) => {
     if (typeof value === "string") {
       return xss(value);
@@ -84,7 +84,7 @@ app.use("/api/v1/tours", tourRouter); // Routes related to tours
 app.use("/api/v1/users", userRouter); // Routes related to users
 
 // Catch-all route for unhandled paths (404 error)
-app.all("*", (req: Request, res: Response, next: NextFunction) => {
+app.all("*", (req: Request, _res: Response, next: NextFunction) => {
   next(
     new AppError(
       `The requested URL ${req.originalUrl} was not found on this server.`,

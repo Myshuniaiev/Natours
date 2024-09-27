@@ -1,26 +1,31 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { promisify } from "util";
 import { Document } from "mongoose";
 import { CookieOptions, NextFunction, Request, Response } from "express";
 
-import User, { IUser } from "../models/user";
-
-import sendEmail from "../utils/email";
-import AppError from "../utils/appError";
-import catchAsync from "../utils/catchAsync";
-
-import { IRequestWithUser } from "../types/types";
+import User from "@models/user";
+import { IUser } from "@mytypes/user";
+import AppError from "@utils/appError";
+import catchAsync from "@utils/catchAsync";
+import sendEmail from "@utils/email";
 
 const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRATION_TIME,
+  const jwtSecret = process.env.JWT_SECRET;
+  const jwtExpiration = process.env.JWT_EXPIRATION_TIME ?? "1d";
+  const cookieExpiration = process.env.JWT_COOKIE_EXPIRATION_TIME
+    ? parseInt(process.env.JWT_COOKIE_EXPIRATION_TIME)
+    : 90;
+
+  if (!jwtSecret) {
+    throw new Error("JWT_SECRET environment variable is not defined.");
+  }
+
+  const token = jwt.sign({ id: user._id }, jwtSecret, {
+    expiresIn: jwtExpiration,
   });
+
   const cookieOptions: CookieOptions = {
-    expires: new Date(
-      Date.now() +
-        parseInt(process.env.JWT_COOKIE_EXPIRATION_TIME) * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + cookieExpiration * 24 * 60 * 60 * 1000),
     httpOnly: true,
   };
 
@@ -28,7 +33,7 @@ const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
     cookieOptions.secure = true;
   }
 
-  user.password = undefined;
+  // user.password = undefined;
 
   res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
@@ -39,7 +44,7 @@ const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
 };
 
 export const signup = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const user = await User.create({
       name: req.body.name,
       email: req.body.email,
@@ -75,15 +80,16 @@ export const login = catchAsync(
 );
 
 export const protect = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    const jwtSecret = process.env.JWT_SECRET;
     let token: string | undefined;
     const authorization = req.headers.authorization;
     if (authorization && authorization.startsWith("Bearer")) {
       token = authorization.split(" ")[1];
+    }
+
+    if (!jwtSecret) {
+      throw new Error("JWT_SECRET environment variable is not defined.");
     }
 
     if (!token) {
@@ -95,8 +101,13 @@ export const protect = catchAsync(
       );
     }
 
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const decoded = jwt.verify(token, jwtSecret);
+
+    if (typeof decoded === "string" || !("id" in decoded)) {
+      return next(new AppError("Token is invalid", 401));
+    }
+
+    const user = await User.findById((decoded as jwt.JwtPayload).id);
 
     if (!user) {
       return next(
@@ -106,7 +117,11 @@ export const protect = catchAsync(
         )
       );
     }
-    if (await user.changedPasswordAfter(decoded.iat)) {
+    if (
+      await user.changedPasswordAfter(
+        (decoded as jwt.JwtPayload & { iat: string }).iat
+      )
+    ) {
       return next(
         new AppError(
           "The user recently changed password. Please log in again",
@@ -121,8 +136,8 @@ export const protect = catchAsync(
 );
 
 export const restrictTo =
-  (...roles) =>
-  (req: IRequestWithUser, res: Response, next: NextFunction) => {
+  (...roles: string[]) =>
+  (req: Request, _res: Response, next: NextFunction) => {
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError("You do not have permission to perform this action.", 403)
@@ -132,7 +147,7 @@ export const restrictTo =
   };
 
 export const forgotPassword = async (
-  req: IRequestWithUser,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -174,11 +189,7 @@ export const forgotPassword = async (
 };
 
 export const resetPassword = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const hashedToken = crypto
       .createHash("sha256")
       .update(req.params.token)
@@ -190,7 +201,7 @@ export const resetPassword = catchAsync(
     });
 
     if (!user) {
-      return next(new AppError("Token is invalid or expired˝.", 400));
+      return next(new AppError("Token is invalid or expired.", 400));
     }
 
     user.password = req.body.password;
@@ -205,14 +216,10 @@ export const resetPassword = catchAsync(
 );
 
 export const updatePassword = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = (await User.findById(req.user.id).select(
       "+password"
-    )) as Document<unknown, {}, IUser> & IUser;
+    )) as IUser;
 
     const isPasswordCorrect = await user.correctPassword(
       req.body.currentPassword,

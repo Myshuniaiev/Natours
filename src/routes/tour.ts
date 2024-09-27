@@ -1,6 +1,7 @@
 import express, { Router } from "express";
-import * as tourController from "../controllers/tour";
-import * as authController from "../controllers/auth";
+
+import * as tourController from "@controllers/tour";
+import * as authController from "@controllers/auth";
 
 const router: Router = express.Router();
 

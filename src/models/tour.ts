@@ -1,41 +1,9 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 import slugify from "slugify";
-import validator from "validator";
 
-export interface ILocation {
-  type: LocationType;
-  coordinates: number[];
-  address: string;
-  description: string;
-}
-export enum LocationType {
-  POINT = "Point",
-}
+import { ITour, TourDifficultyEnum, LocationTypeEnum } from "src/mytypes/tour";
 
-// Define an interface for the Tour document
-export interface ITour extends Document {
-  name: string;
-  slug?: string;
-  duration: number;
-  maxGroupSize: number;
-  difficulty: "easy" | "medium" | "difficult";
-  ratingsAverage: number;
-  ratingQuantity: number;
-  price: number;
-  priceDiscount: number;
-  summary: string;
-  description: string;
-  imageCover: string;
-  images: string[];
-  startDates: Date[];
-  secretTour: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  startLocation: ILocation;
-  locations: (ILocation & { day: number })[];
-}
-
-// Define the schema with TypeScript type annotations
+// Schema definition
 const tourSchema: Schema<ITour> = new mongoose.Schema(
   {
     name: {
@@ -43,8 +11,8 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       required: [true, "A tour must have a name"],
       unique: true,
       trim: true,
-      maxlength: [40, "A tour name must have less or equal then 40 characters"],
-      minlength: [10, "A tour name must have less or equal then 10 characters"],
+      maxlength: [40, "A tour name must have less or equal than 40 characters"],
+      minlength: [10, "A tour name must have at least 10 characters"],
     },
     slug: {
       type: String,
@@ -55,14 +23,14 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     },
     maxGroupSize: {
       type: Number,
-      required: [true, "A tour must have a groupSize"],
+      required: [true, "A tour must have a group size"],
     },
     difficulty: {
       type: String,
       required: [true, "A tour must have a difficulty"],
       enum: {
-        values: ["easy", "medium", "difficulty"],
-        message: "Difficulty is either: easy, medium, difficult",
+        values: Object.values(TourDifficultyEnum),
+        message: "Difficulty is either: easy, medium, or difficult",
       },
     },
     ratingsAverage: {
@@ -82,14 +50,10 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     priceDiscount: {
       type: Number,
       validate: {
-        validator: function (val: number) {
-          let isValid = true;
-          if (val < this.price) {
-            isValid = false;
-          }
-          return !isValid;
+        validator: function (this: ITour, val: number) {
+          return val < this.price;
         },
-        message: "Discount price should be below regular price",
+        message: "Discount price ({VALUE}) should be below regular price",
       },
     },
     summary: {
@@ -105,12 +69,8 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       type: String,
       required: [true, "A tour must have a cover image"],
     },
-    images: {
-      type: [String],
-    },
-    startDates: {
-      type: [Date],
-    },
+    images: [String],
+    startDates: [Date],
     secretTour: {
       type: Boolean,
       default: false,
@@ -118,35 +78,23 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     startLocation: {
       type: {
         type: String,
-        enum: Object.values(LocationType),
-        default: LocationType.POINT,
+        enum: Object.values(LocationTypeEnum),
+        default: LocationTypeEnum.POINT,
       },
-      coordinates: {
-        type: [Number],
-      },
-      address: {
-        type: String,
-      },
-      description: {
-        type: String,
-      },
+      coordinates: [Number],
+      address: String,
+      description: String,
     },
     locations: [
       {
         type: {
           type: String,
-          enum: Object.values(LocationType),
-          default: LocationType.POINT,
+          enum: Object.values(LocationTypeEnum),
+          default: LocationTypeEnum.POINT,
         },
-        coordinates: {
-          type: [Number],
-        },
-        address: {
-          type: String,
-        },
-        description: {
-          type: String,
-        },
+        coordinates: [Number],
+        address: String,
+        description: String,
       },
     ],
   },
@@ -158,28 +106,31 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
   }
 );
 
+// Virtuals
 tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
+// Document middleware
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
+// Query middleware
 tourSchema.pre(/^find/, function (next) {
-  const query = this as mongoose.Query<any, ITour>;
   // @ts-ignore
-  query.find({ secretTour: { $ne: true } });
+  this.find({ secretTour: { $ne: true } });
   next();
 });
 
+// Aggregation middleware
 tourSchema.pre("aggregate", function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 
-// Create the model with a generic type argument
+// Model creation
 const Tour: Model<ITour> = mongoose.model<ITour>("Tour", tourSchema);
 
 export default Tour;

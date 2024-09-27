@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import Tour, { ITour } from "../models/tour";
-import APIFeatures from "../utils/apiFeatures";
-import catchAsync from "../utils/catchAsync";
-import AppError from "../utils/appError";
-import { IRequestWithUser } from "../types/types";
+import APIFeatures from "@utils/apiFeatures";
+import catchAsync from "@utils/catchAsync";
+import AppError from "@utils/appError";
+import Tour from "@models/tour";
+import { ITour } from "@mytypes/tour";
 
 // Extend the IRequest interface with ITour for the body and query string
 interface IRequestWithBody<T> extends Request {
@@ -13,7 +13,7 @@ interface IRequestWithBody<T> extends Request {
 // Handler to get top tours
 export const aliasTopTours = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) => {
   req.query.limit = "5";
@@ -24,11 +24,7 @@ export const aliasTopTours = (
 
 // Handler to get all tours
 export const getTours = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
       .filter()
       .sort()
@@ -61,7 +57,7 @@ export const createTour = catchAsync(
   async (
     req: IRequestWithBody<ITour>,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
   ): Promise<void> => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({ status: "success", data: { tour: newTour } });
@@ -96,7 +92,7 @@ export const deleteTour = catchAsync(
 );
 
 export const getTourStats = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const stats = await Tour.aggregate([
       { $match: { ratingsAverage: { $gte: 4.5 } } },
       {
@@ -119,7 +115,7 @@ export const getTourStats = catchAsync(
 );
 
 export const getMonthlyPlan = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     const year = Number(req.params.year);
     const stats = await Tour.aggregate([
       { $unwind: "$startDates" },
