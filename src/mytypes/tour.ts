@@ -1,4 +1,6 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
+
+import { IUser } from "@mytypes/user";
 
 export enum LocationTypeEnum {
   POINT = "Point",
@@ -37,4 +39,5 @@ export interface ITour extends Document {
   updatedAt?: Date;
   startLocation: ILocation;
   locations: (ILocation & { day: number })[];
+  guides: Types.ObjectId[] | IUser[];
 }

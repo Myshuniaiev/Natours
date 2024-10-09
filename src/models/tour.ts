@@ -1,7 +1,9 @@
-import mongoose, { Schema, Model } from "mongoose";
+import mongoose, { Schema, Model, Query, Document } from "mongoose";
 import slugify from "slugify";
 
-import { ITour, TourDifficultyEnum, LocationTypeEnum } from "src/mytypes/tour";
+import User from "@models/user";
+import AppError from "@utils/appError";
+import { ITour, TourDifficultyEnum, LocationTypeEnum } from "@mytypes/tour";
 
 // Schema definition
 const tourSchema: Schema<ITour> = new mongoose.Schema(
@@ -97,6 +99,12 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
         description: String,
       },
     ],
+    guides: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     strict: true,
@@ -116,10 +124,25 @@ tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+tourSchema.pre("save", async function (next) {
+  try {
+    const guidesPromises = this.guides.map(async (id) => {
+      const guide = await User.findById(id);
+      if (!guide) {
+        throw new Error(`No user found with id ${id}`);
+      }
+      return guide;
+    });
+
+    this.guides = await Promise.all(guidesPromises);
+    next();
+  } catch (error) {
+    next(new AppError(error as string, 500));
+  }
+});
 
 // Query middleware
-tourSchema.pre(/^find/, function (next) {
-  // @ts-ignore
+tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
   this.find({ secretTour: { $ne: true } });
   next();
 });
