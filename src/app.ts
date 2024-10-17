@@ -1,15 +1,18 @@
 import express, { Application, Request, Response, NextFunction } from "express";
-import morgan from "morgan";
-import path from "path";
-import { rateLimit } from "express-rate-limit";
-import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss";
+import path from "path";
+import morgan from "morgan";
+import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
+import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 
 import AppError from "@utils/appError";
+
 import tourRouter from "@routes/tour";
 import userRouter from "@routes/user";
+import reviewRouter from "@routes/review";
+
 import { globalErrorHandler } from "@controllers/error";
 
 const app: Application = express();
@@ -82,6 +85,7 @@ app.use(
 // API routes (separated by feature for better modularity)
 app.use("/api/v1/tours", tourRouter); // Routes related to tours
 app.use("/api/v1/users", userRouter); // Routes related to users
+app.use("/api/v1/reviews", reviewRouter); // Routes related to reviews
 
 // Catch-all route for unhandled paths (404 error)
 app.all("*", (req: Request, _res: Response, next: NextFunction) => {

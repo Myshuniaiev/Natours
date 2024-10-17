@@ -36,11 +36,7 @@ const reviewSchema: Schema<IReview> = new mongoose.Schema(
 
 // Query middleware
 reviewSchema.pre(/^find/, function (this: Query<IReview, Document>, next) {
-  this.populate({ path: "user", select: "-__v -passwordChangedAt" });
-  next();
-});
-reviewSchema.pre(/^find/, function (this: Query<IReview, Document>, next) {
-  this.populate({ path: "tour" });
+  this.populate({ path: "user", select: "name photo" });
   next();
 });
 

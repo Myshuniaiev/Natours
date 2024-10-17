@@ -143,12 +143,19 @@ tourSchema.pre("save", async function (next) {
 
 // Query middleware
 tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
-  this.populate({ path: "guides",  select: "-__v -passwordChangedAt" });
+  this.populate({ path: "guides", select: "-__v -passwordChangedAt" });
   next();
 });
 tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
   this.find({ secretTour: { $ne: true } });
   next();
+});
+
+// Virtual population
+tourSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "tour",
+  localField: "_id",
 });
 
 // Aggregation middleware
