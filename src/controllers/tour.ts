@@ -4,11 +4,7 @@ import catchAsync from "@utils/catchAsync";
 import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import { ITour } from "@mytypes/tour";
-
-// Extend the IRequest interface with ITour for the body and query string
-interface IRequestWithBody<T> extends Request {
-  body: T;
-}
+import { IRequestWithBody } from "@mytypes/express";
 
 // Handler to get top tours
 export const aliasTopTours = (
