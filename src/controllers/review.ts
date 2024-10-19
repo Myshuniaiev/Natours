@@ -9,7 +9,6 @@ import { IRequestWithBody } from "@mytypes/express";
 import Tour from "@models/tour";
 import * as factory from "@controllers/handlerFactory";
 
-
 // Handler to get all reviews
 export const getReviews = catchAsync(
   async (req: Request, res: Response): Promise<void> => {
@@ -82,18 +81,7 @@ export const createReview = catchAsync(
 );
 
 // Handler to update a review
-export const updateReview = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!review) {
-      return next(new AppError("No review found with that ID", 404));
-    }
-    res.status(200).json({ status: "success", data: { review } });
-  }
-);
+export const updateReview = factory.updateOne(Review);
 
 // Handler to delete a review
 export const deleteReview = factory.deleteOne(Review);

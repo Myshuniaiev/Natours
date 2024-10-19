@@ -58,18 +58,7 @@ export const createTour = catchAsync(
 );
 
 // Handler to update a tour
-export const updateTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!tour) {
-      return next(new AppError("No tour found with that ID", 404));
-    }
-    res.status(200).json({ status: "success", data: { tour } });
-  }
-);
+export const updateTour = factory.updateOne(Tour);
 
 // Handler to delete a tour
 export const deleteTour = factory.deleteOne(Tour);

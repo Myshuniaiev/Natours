@@ -5,6 +5,7 @@ import { IUser } from "src/mytypes/user";
 import APIFeatures from "@utils/apiFeatures";
 import AppError from "@utils/appError";
 import catchAsync from "@utils/catchAsync";
+import * as factory from "@controllers/handlerFactory";
 
 const filterObj = <T extends object>(
   obj: T,
@@ -20,7 +21,6 @@ const filterObj = <T extends object>(
 
   return newObj;
 };
-
 
 export const getUsers = catchAsync(
   async (req: Request, res: Response): Promise<void> => {
@@ -74,3 +74,7 @@ export const deleteMe = catchAsync(
     });
   }
 );
+
+export const updateUser = factory.updateOne(User);
+
+export const deleteUser = factory.deleteOne(User);

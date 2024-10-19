@@ -16,3 +16,18 @@ export const deleteOne = <T>(Model: Model<T>) =>
         .json({ status: "success", message: "The document has been deleted." });
     }
   );
+
+// Handler to update a document
+export const updateOne = <T>(Model: Model<T>) =>
+  catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true,
+      });
+      if (!doc) {
+        return next(new AppError("No doc found with that ID", 404));
+      }
+      res.status(200).json({ status: "success", data: { data: doc } });
+    }
+  );
