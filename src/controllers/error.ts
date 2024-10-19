@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import AppError, { ExtendedError } from "@utils/appError";
 
 const handleCastErrorDB = (err: ExtendedError) => {
@@ -57,8 +57,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
 export const globalErrorHandler = (
   err: AppError | ExtendedError,
   _req: Request,
-  res: Response,
-  _next: NextFunction
+  res: Response
 ) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";

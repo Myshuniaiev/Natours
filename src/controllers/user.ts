@@ -6,13 +6,6 @@ import APIFeatures from "@utils/apiFeatures";
 import AppError from "@utils/appError";
 import catchAsync from "@utils/catchAsync";
 
-interface Tour {
-  _id: string;
-  // add other properties of a tour if needed
-}
-
-const tours: Tour[] = []; // This should be populated with tour data
-
 const filterObj = <T extends object>(
   obj: T,
   ...allowedFields: (keyof T)[]
@@ -28,25 +21,9 @@ const filterObj = <T extends object>(
   return newObj;
 };
 
-export const checkId = (
-  _req: Request,
-  res: Response,
-  next: NextFunction,
-  value: string
-): void => {
-  const isExist = tours.find((tour) => tour._id === value);
-  if (!isExist) {
-    res.status(404).json({
-      status: "fail",
-      message: "Invalid ID.",
-    });
-    return;
-  }
-  next();
-};
 
 export const getUsers = catchAsync(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const features = new APIFeatures<IUser>(User.find(), req.query)
       .filter()
       .sort()
@@ -88,7 +65,7 @@ export const updateMe = catchAsync(
 );
 
 export const deleteMe = catchAsync(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     await User.findByIdAndUpdate(req.user.id, { active: false });
 
     res.status(204).json({
@@ -97,27 +74,3 @@ export const deleteMe = catchAsync(
     });
   }
 );
-
-export const getUser = (_req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const createUser = (_req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const updateUser = (_req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const deleteUser = (_req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};

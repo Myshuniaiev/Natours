@@ -3,7 +3,7 @@ import express, { Router } from "express";
 import * as reviewController from "@controllers/review";
 import * as authController from "@controllers/auth";
 
-const router: Router = express.Router();
+const router: Router = express.Router({ mergeParams: true });
 
 router
   .route("/")
@@ -12,6 +12,15 @@ router
     authController.protect,
     authController.restrictTo("user"),
     reviewController.createReview
+);
+  
+router
+  .route("/:id")
+  .delete(
+    authController.protect,
+    authController.restrictTo("user", "admin"),
+    reviewController.deleteReview
   );
+
 
 export default router;

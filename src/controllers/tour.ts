@@ -5,6 +5,7 @@ import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import { ITour } from "@mytypes/tour";
 import { IRequestWithBody } from "@mytypes/express";
+import * as factory from "@controllers/handlerFactory";
 
 // Handler to get top tours
 export const aliasTopTours = (
@@ -20,7 +21,7 @@ export const aliasTopTours = (
 
 // Handler to get all tours
 export const getTours = catchAsync(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
       .filter()
       .sort()
@@ -50,11 +51,7 @@ export const getTour = catchAsync(
 
 // Handler to create a new tour
 export const createTour = catchAsync(
-  async (
-    req: IRequestWithBody<ITour>,
-    res: Response,
-    _next: NextFunction
-  ): Promise<void> => {
+  async (req: IRequestWithBody<ITour>, res: Response): Promise<void> => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({ status: "success", data: { tour: newTour } });
   }
@@ -75,20 +72,10 @@ export const updateTour = catchAsync(
 );
 
 // Handler to delete a tour
-export const deleteTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const tour = await Tour.findByIdAndDelete(req.params.id);
-    if (!tour) {
-      return next(new AppError("No tour found with that ID", 404));
-    }
-    res
-      .status(200)
-      .json({ status: "success", message: "The tour has been deleted." });
-  }
-);
+export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(
-  async (_req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (_req: Request, res: Response): Promise<void> => {
     const stats = await Tour.aggregate([
       { $match: { ratingsAverage: { $gte: 4.5 } } },
       {
@@ -111,7 +98,7 @@ export const getTourStats = catchAsync(
 );
 
 export const getMonthlyPlan = catchAsync(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const year = Number(req.params.year);
     const stats = await Tour.aggregate([
       { $unwind: "$startDates" },

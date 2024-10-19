@@ -85,7 +85,7 @@ app.use(
 // API routes (separated by feature for better modularity)
 app.use("/api/v1/tours", tourRouter); // Routes related to tours
 app.use("/api/v1/users", userRouter); // Routes related to users
-app.use("/api/v1/reviews", reviewRouter); // Routes related to reviews
+app.use("/api/v1/reviews", reviewRouter); // Routes related to users
 
 // Catch-all route for unhandled paths (404 error)
 app.all("*", (req: Request, _res: Response, next: NextFunction) => {

@@ -2,8 +2,11 @@ import express, { Router } from "express";
 
 import * as tourController from "@controllers/tour";
 import * as authController from "@controllers/auth";
+import reviewRouter from "@routes/review";
 
 const router: Router = express.Router();
+
+router.use("/:tourId/reviews", reviewRouter);
 
 router
   .route("/top-tours")

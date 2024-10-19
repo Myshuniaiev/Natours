@@ -6,11 +6,22 @@ import AppError from "@utils/appError";
 import Review from "@models/review";
 import { IReview } from "@mytypes/review";
 import { IRequestWithBody } from "@mytypes/express";
+import Tour from "@models/tour";
+import * as factory from "@controllers/handlerFactory";
+
 
 // Handler to get all reviews
 export const getReviews = catchAsync(
-  async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const features = new APIFeatures<IReview>(Review.find(), req.query)
+  async (req: Request, res: Response): Promise<void> => {
+    let filter = {};
+    const { tourId } = req.params;
+
+    const foundTour = await Tour.findById(tourId);
+    if (foundTour) {
+      filter = { tour: tourId };
+    }
+
+    const features = new APIFeatures<IReview>(Review.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
@@ -42,10 +53,31 @@ export const createReview = catchAsync(
   async (
     req: IRequestWithBody<IReview>,
     res: Response,
-    _next: NextFunction
+    next: NextFunction
   ): Promise<void> => {
+    const { tourId } = req.params;
+    const { tour, user } = req.body;
+
+    if (!tour) {
+      if (!tourId) {
+        return next(new AppError("Please provide a tour id.", 400));
+      }
+      const foundTour = await Tour.findById(tourId);
+      if (!foundTour) {
+        return next(new AppError("Tour with provided id does not exist.", 404));
+      }
+      req.body.tour = foundTour.id;
+    }
+    if (!user) {
+      req.body.user = req.user.id;
+    }
+
     const review = await Review.create(req.body);
-    res.status(201).json({ status: "success", data: { review: review } });
+
+    res.status(201).json({
+      status: "success",
+      data: { review },
+    });
   }
 );
 
@@ -64,14 +96,4 @@ export const updateReview = catchAsync(
 );
 
 // Handler to delete a review
-export const deleteReview = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const review = await Review.findByIdAndDelete(req.params.id);
-    if (!review) {
-      return next(new AppError("No review found with that ID", 404));
-    }
-    res
-      .status(200)
-      .json({ status: "success", message: "The review has been deleted." });
-  }
-);
+export const deleteReview = factory.deleteOne(Review);
