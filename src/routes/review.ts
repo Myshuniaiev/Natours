@@ -12,15 +12,15 @@ router
     authController.protect,
     authController.restrictTo("user"),
     reviewController.createReview
-);
-  
+  );
+
 router
   .route("/:id")
+  .patch(reviewController.updateReview)
   .delete(
     authController.protect,
     authController.restrictTo("user", "admin"),
     reviewController.deleteReview
   );
-
 
 export default router;
