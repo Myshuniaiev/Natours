@@ -9,7 +9,6 @@ import { IRequestWithBody } from "@mytypes/express";
 import Tour from "@models/tour";
 import * as factory from "@controllers/handlerFactory";
 
-// Handler to get all reviews
 export const getReviews = catchAsync(
   async (req: Request, res: Response): Promise<void> => {
     let filter = {};
@@ -36,7 +35,6 @@ export const getReviews = catchAsync(
   }
 );
 
-// Handler to get a specific review by ID
 export const getReview = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const review = await Review.findById(req.params.id);
@@ -47,7 +45,6 @@ export const getReview = catchAsync(
   }
 );
 
-// Handler to create a new review
 export const createReview = catchAsync(
   async (
     req: IRequestWithBody<IReview>,
@@ -80,8 +77,6 @@ export const createReview = catchAsync(
   }
 );
 
-// Handler to update a review
 export const updateReview = factory.updateOne(Review);
 
-// Handler to delete a review
 export const deleteReview = factory.deleteOne(Review);

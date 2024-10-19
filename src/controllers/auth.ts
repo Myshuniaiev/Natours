@@ -33,8 +33,6 @@ const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
     cookieOptions.secure = true;
   }
 
-  // user.password = undefined;
-
   res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
     status: "success",

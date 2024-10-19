@@ -7,7 +7,6 @@ import { ITour } from "@mytypes/tour";
 import { IRequestWithBody } from "@mytypes/express";
 import * as factory from "@controllers/handlerFactory";
 
-// Handler to get top tours
 export const aliasTopTours = (
   req: Request,
   _res: Response,
@@ -19,7 +18,6 @@ export const aliasTopTours = (
   next();
 };
 
-// Handler to get all tours
 export const getTours = catchAsync(
   async (req: Request, res: Response): Promise<void> => {
     const features = new APIFeatures<ITour>(Tour.find(), req.query)
@@ -38,7 +36,6 @@ export const getTours = catchAsync(
   }
 );
 
-// Handler to get a specific tour by ID
 export const getTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const tour = await Tour.findById(req.params.id).populate("reviews");
@@ -49,7 +46,6 @@ export const getTour = catchAsync(
   }
 );
 
-// Handler to create a new tour
 export const createTour = catchAsync(
   async (req: IRequestWithBody<ITour>, res: Response): Promise<void> => {
     const newTour = await Tour.create(req.body);
@@ -57,10 +53,8 @@ export const createTour = catchAsync(
   }
 );
 
-// Handler to update a tour
 export const updateTour = factory.updateOne(Tour);
 
-// Handler to delete a tour
 export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(

@@ -3,7 +3,6 @@ import AppError from "@utils/appError";
 import { NextFunction, Request, Response } from "express";
 import { Model } from "mongoose";
 
-// Handler to delete a document
 export const deleteOne = <T>(Model: Model<T>) =>
   catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -17,7 +16,6 @@ export const deleteOne = <T>(Model: Model<T>) =>
     }
   );
 
-// Handler to update a document
 export const updateOne = <T>(Model: Model<T>) =>
   catchAsync(
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
