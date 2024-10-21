@@ -45,10 +45,10 @@ export const getReview = catchAsync(
   }
 );
 
-export const createReview = catchAsync(
+export const setTourUserIds = catchAsync(
   async (
     req: IRequestWithBody<IReview>,
-    res: Response,
+    _res: Response,
     next: NextFunction
   ): Promise<void> => {
     const { tourId } = req.params;
@@ -68,14 +68,11 @@ export const createReview = catchAsync(
       req.body.user = req.user.id;
     }
 
-    const review = await Review.create(req.body);
-
-    res.status(201).json({
-      status: "success",
-      data: { review },
-    });
+    next();
   }
 );
+
+export const createReview = factory.createOne(Review);
 
 export const updateReview = factory.updateOne(Review);
 

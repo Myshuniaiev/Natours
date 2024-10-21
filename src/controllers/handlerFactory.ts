@@ -2,6 +2,7 @@ import catchAsync from "@utils/catchAsync";
 import AppError from "@utils/appError";
 import { NextFunction, Request, Response } from "express";
 import { Model } from "mongoose";
+import { IRequestWithBody } from "@mytypes/express";
 
 export const deleteOne = <T>(Model: Model<T>) =>
   catchAsync(
@@ -29,3 +30,9 @@ export const updateOne = <T>(Model: Model<T>) =>
       res.status(200).json({ status: "success", data: { data: doc } });
     }
   );
+
+export const createOne = <T>(Model: Model<T>) =>
+  catchAsync(async (req: IRequestWithBody<T>, res: Response): Promise<void> => {
+    const doc = await Model.create(req.body);
+    res.status(201).json({ status: "success", data: { data: doc } });
+  });

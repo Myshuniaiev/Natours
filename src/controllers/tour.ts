@@ -4,7 +4,6 @@ import catchAsync from "@utils/catchAsync";
 import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import { ITour } from "@mytypes/tour";
-import { IRequestWithBody } from "@mytypes/express";
 import * as factory from "@controllers/handlerFactory";
 
 export const aliasTopTours = (
@@ -46,12 +45,7 @@ export const getTour = catchAsync(
   }
 );
 
-export const createTour = catchAsync(
-  async (req: IRequestWithBody<ITour>, res: Response): Promise<void> => {
-    const newTour = await Tour.create(req.body);
-    res.status(201).json({ status: "success", data: { tour: newTour } });
-  }
-);
+export const createTour = factory.createOne(Tour);
 
 export const updateTour = factory.updateOne(Tour);
 
