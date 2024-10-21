@@ -36,3 +36,19 @@ export const createOne = <T>(Model: Model<T>) =>
     const doc = await Model.create(req.body);
     res.status(201).json({ status: "success", data: { data: doc } });
   });
+
+// TODO Replace any type
+export const getOne = <T>(Model: Model<T>, options?: any) =>
+  catchAsync(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      let query = Model.findById(req.params.id);
+      if (options) {
+        query = query.populate(options);
+      }
+      const doc = await query;
+      if (!doc) {
+        return next(new AppError("No doc found with that ID", 404));
+      }
+      res.status(200).json({ status: "success", data: { data: doc } });
+    }
+  );

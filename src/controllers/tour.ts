@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import APIFeatures from "@utils/apiFeatures";
 import catchAsync from "@utils/catchAsync";
-import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import { ITour } from "@mytypes/tour";
 import * as factory from "@controllers/handlerFactory";
@@ -35,15 +34,7 @@ export const getTours = catchAsync(
   }
 );
 
-export const getTour = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const tour = await Tour.findById(req.params.id).populate("reviews");
-    if (!tour) {
-      return next(new AppError("No tour found with that ID", 404));
-    }
-    res.status(200).json({ status: "success", data: { tour } });
-  }
-);
+export const getTour = factory.getOne(Tour, { path: "reviews" });
 
 export const createTour = factory.createOne(Tour);
 

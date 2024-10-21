@@ -35,15 +35,7 @@ export const getReviews = catchAsync(
   }
 );
 
-export const getReview = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const review = await Review.findById(req.params.id);
-    if (!review) {
-      return next(new AppError("No review found with that ID", 404));
-    }
-    res.status(200).json({ status: "success", data: { review } });
-  }
-);
+export const getReview = factory.getOne(Review);
 
 export const setTourUserIds = catchAsync(
   async (
