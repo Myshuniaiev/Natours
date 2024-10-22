@@ -69,11 +69,11 @@ export const getAll = <T extends Document>(Model: Model<T>) =>
       .limitFields()
       .paginate();
 
-    const tours = await features.query;
+    const doc = await features.query;
 
     res.status(200).json({
       status: "success",
-      results: tours.length,
-      data: { tours },
+      results: doc.length,
+      data: { data: doc },
     });
   });
