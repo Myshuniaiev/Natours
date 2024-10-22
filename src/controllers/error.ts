@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import AppError, { ExtendedError } from "../utils/appError";
+import { Request, Response } from "express";
+import AppError, { ExtendedError } from "@utils/appError";
 
 const handleCastErrorDB = (err: ExtendedError) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
@@ -15,8 +15,10 @@ const handleDuplicatedFieldsDB = (err: ExtendedError) => {
 };
 
 const handleValidationErrorDB = (err: ExtendedError) => {
-  // console.log(err.error)
-  const errors = Object.values(err.errors).map((el) => el.message);
+  const errors: string[] = [];
+  if (err.errors?.length) {
+    Object.values(err.errors).map((el) => el.message);
+  }
   const message = `Invalid Validation Error. ${errors.join(". ")}`;
   return new AppError(message, 400);
 };
@@ -54,9 +56,8 @@ const sendErrorProd = (err: AppError, res: Response) => {
 
 export const globalErrorHandler = (
   err: AppError | ExtendedError,
-  req: Request,
-  res: Response,
-  next: NextFunction
+  _req: Request,
+  res: Response
 ) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";

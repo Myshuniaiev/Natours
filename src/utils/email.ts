@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import path from "path";
+// import path from "path";
 
 const sendEmail = async (options: {
   email: string;
@@ -19,7 +19,7 @@ const sendEmail = async (options: {
     from: "Oleksii Myshuniaiev <oleksii.myshuniaiev@gmail.com>",
     to: options.email,
     subject: options.subject,
-    text: options.resetURL
+    text: options.resetURL,
     // html: `
     // <div
     //     class="container"
@@ -32,7 +32,7 @@ const sendEmail = async (options: {
     //     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     //     border-radius: 8px;
     //     font-family: Montserrat, sans-serif;
-    //     font-optical-sizing: auto;      
+    //     font-optical-sizing: auto;
     //     "
     // >
     //     <h1 style="font-size: 24px; color: #333">Mitravel</h1>

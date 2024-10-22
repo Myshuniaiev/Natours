@@ -1,68 +1,18 @@
 import { Response, NextFunction, Request } from "express";
-import catchAsync from "../utils/catchAsync";
-import APIFeatures from "../utils/apiFeatures";
-import User, { IUser } from "../models/user";
-import { IRequestWithUser } from "../types/types";
-import AppError from "../utils/appError";
 
-interface Tour {
-  _id: string;
-  // add other properties of a tour if needed
-}
+import User from "@models/user";
+import AppError from "@utils/appError";
+import catchAsync from "@utils/catchAsync";
+import * as factory from "@controllers/handlerFactory";
+import { filterObj } from "@utils/filterObj";
 
-const tours: Tour[] = []; // This should be populated with tour data
-
-const filterObj = (obj, ...allowedFields) => {
-  const newObj = {};
-  Object.keys(obj).forEach((el) => {
-    if (allowedFields.includes(el)) {
-      newObj[el] = obj[el];
-    }
-  });
-  return newObj;
-};
-
-export const checkId = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-  value: string
-): void => {
-  const isExist = tours.find((tour) => tour._id === value);
-  if (!isExist) {
-    res.status(404).json({
-      status: "fail",
-      message: "Invalid ID.",
-    });
-    return;
-  }
+export const getMe = (req: Request, _res: Response, next: NextFunction) => {
+  req.params.id = req.user.id;
   next();
 };
 
-export const getUsers = catchAsync(
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const features = new APIFeatures<IUser>(User.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    const users = await features.query;
-
-    res.status(200).json({
-      status: "success",
-      results: users.length,
-      data: { users },
-    });
-  }
-);
-
 export const updateMe = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (req.body.password || req.body.passwordConfirm) {
       return next(
         new AppError(
@@ -86,11 +36,7 @@ export const updateMe = catchAsync(
 );
 
 export const deleteMe = catchAsync(
-  async (
-    req: IRequestWithUser,
-    res: Response,
-    next: NextFunction
-  ): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     await User.findByIdAndUpdate(req.user.id, { active: false });
 
     res.status(204).json({
@@ -100,26 +46,8 @@ export const deleteMe = catchAsync(
   }
 );
 
-export const getUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const createUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const updateUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
-
-export const deleteUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+export const getUsers = factory.getAll(User);
+export const getUser = factory.getOne(User);
+export const createUser = factory.createOne(User);
+export const updateUser = factory.updateOne(User);
+export const deleteUser = factory.deleteOne(User);
