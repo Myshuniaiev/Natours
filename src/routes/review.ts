@@ -5,11 +5,12 @@ import * as authController from "@controllers/auth";
 
 const router: Router = express.Router({ mergeParams: true });
 
+router.use(authController.protect);
+
 router
   .route("/")
   .get(reviewController.getReviews)
   .post(
-    authController.protect,
     authController.restrictTo("user"),
     reviewController.setTourUserIds,
     reviewController.createReview
@@ -18,10 +19,12 @@ router
 router
   .route("/:id")
   .get(reviewController.getReview)
-  .patch(reviewController.updateReview) 
+  .patch(
+    authController.restrictTo("admin", "user"),
+    reviewController.updateReview
+  )
   .delete(
-    authController.protect,
-    authController.restrictTo("user", "admin"),
+    authController.restrictTo("admin", "user"),
     reviewController.deleteReview
   );
 
