@@ -1,44 +1,15 @@
 import { Response, NextFunction, Request } from "express";
 
 import User from "@models/user";
-import { IUser } from "src/mytypes/user";
-import APIFeatures from "@utils/apiFeatures";
 import AppError from "@utils/appError";
 import catchAsync from "@utils/catchAsync";
 import * as factory from "@controllers/handlerFactory";
+import { filterObj } from "@utils/filterObj";
 
-const filterObj = <T extends object>(
-  obj: T,
-  ...allowedFields: (keyof T)[]
-): Partial<T> => {
-  const newObj: Partial<T> = {};
-
-  Object.keys(obj).forEach((key) => {
-    if (allowedFields.includes(key as keyof T)) {
-      newObj[key as keyof T] = obj[key as keyof T];
-    }
-  });
-
-  return newObj;
+export const getMe = (req: Request, _res: Response, next: NextFunction) => {
+  req.params.id = req.user.id;
+  next();
 };
-
-export const getUsers = catchAsync(
-  async (req: Request, res: Response): Promise<void> => {
-    const features = new APIFeatures<IUser>(User.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    const users = await features.query;
-
-    res.status(200).json({
-      status: "success",
-      results: users.length,
-      data: { users },
-    });
-  }
-);
 
 export const updateMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -75,8 +46,7 @@ export const deleteMe = catchAsync(
   }
 );
 
+export const getUsers = factory.getAll(User);
 export const getUser = factory.getOne(User);
-
 export const updateUser = factory.updateOne(User);
-
 export const deleteUser = factory.deleteOne(User);

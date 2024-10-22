@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { IUser } from "@models/user";
 
-// Extend the IRequest interface for the body and query string
+// Extend the Request interface for the body and query string
 export interface IRequestWithBody<T> extends Request {
   body: T;
 }

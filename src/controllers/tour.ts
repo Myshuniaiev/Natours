@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import APIFeatures from "@utils/apiFeatures";
 import catchAsync from "@utils/catchAsync";
 import Tour from "@models/tour";
-import { ITour } from "@mytypes/tour";
 import * as factory from "@controllers/handlerFactory";
 
 export const aliasTopTours = (
@@ -15,32 +13,6 @@ export const aliasTopTours = (
   req.query.fields = "name,price,ratingAverage,summary,difficulty";
   next();
 };
-
-export const getTours = catchAsync(
-  async (req: Request, res: Response): Promise<void> => {
-    const features = new APIFeatures<ITour>(Tour.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    const tours = await features.query;
-
-    res.status(200).json({
-      status: "success",
-      results: tours.length,
-      data: { tours },
-    });
-  }
-);
-
-export const getTour = factory.getOne(Tour, { path: "reviews" });
-
-export const createTour = factory.createOne(Tour);
-
-export const updateTour = factory.updateOne(Tour);
-
-export const deleteTour = factory.deleteOne(Tour);
 
 export const getTourStats = catchAsync(
   async (_req: Request, res: Response): Promise<void> => {
@@ -94,3 +66,9 @@ export const getMonthlyPlan = catchAsync(
       .json({ status: "success", results: stats.length, data: { stats } });
   }
 );
+
+export const getTours = factory.getAll(Tour);
+export const getTour = factory.getOne(Tour, { path: "reviews" });
+export const createTour = factory.createOne(Tour);
+export const updateTour = factory.updateOne(Tour);
+export const deleteTour = factory.deleteOne(Tour);
