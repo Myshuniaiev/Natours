@@ -151,6 +151,9 @@ tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
   next();
 });
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // Virtual population
 tourSchema.virtual("reviews", {
   ref: "Review",
