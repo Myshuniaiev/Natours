@@ -80,6 +80,9 @@ reviewSchema.statics.calcAverageRatings = async function (
   }
 };
 
+// Middleware to prevent duplicated reviews
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // Middleware to calculate average ratings after saving a review
 reviewSchema.post<IReview>("save", async function () {
   await (this.constructor as typeof Review).calcAverageRatings(
@@ -105,7 +108,7 @@ reviewSchema.post<QueryWithR>(/^findOneAnd/, async function () {
 
 // Create the Review model
 const Review: ReviewModel = mongoose.model<IReview, ReviewModel>(
-   "Review",
+  "Review",
   reviewSchema
 );
 
