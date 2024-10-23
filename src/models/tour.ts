@@ -3,7 +3,7 @@ import slugify from "slugify";
 
 import User from "@models/user";
 import AppError from "@utils/appError";
-import { ITour, TourDifficultyEnum, LocationTypeEnum } from "@mytypes/tour";
+import { ITour, TourDifficultyEnum } from "@mytypes/tour";
 
 // Schema definition
 const tourSchema: Schema<ITour> = new mongoose.Schema(
@@ -81,10 +81,13 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     startLocation: {
       type: {
         type: String,
-        enum: Object.values(LocationTypeEnum),
-        default: LocationTypeEnum.POINT,
+        enum: ["Point"],
+        required: true,
       },
-      coordinates: [Number],
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
       address: String,
       description: String,
     },
@@ -92,8 +95,8 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
       {
         type: {
           type: String,
-          enum: Object.values(LocationTypeEnum),
-          default: LocationTypeEnum.POINT,
+          enum: "Point",
+          default: "Point",
         },
         coordinates: [Number],
         address: String,
@@ -154,6 +157,7 @@ tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: "2dsphere" });
 
 // Virtual population
 tourSchema.virtual("reviews", {
@@ -162,11 +166,11 @@ tourSchema.virtual("reviews", {
   localField: "_id",
 });
 
-// Aggregation middleware
-tourSchema.pre("aggregate", function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-});
+// TODO Aggregation middleware
+// tourSchema.pre("aggregate", function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   next();
+// });
 
 // Model creation
 const Tour: Model<ITour> = mongoose.model<ITour>("Tour", tourSchema);

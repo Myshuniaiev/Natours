@@ -2,10 +2,6 @@ import { Document, Types } from "mongoose";
 
 import { IUser } from "@mytypes/user";
 
-export enum LocationTypeEnum {
-  POINT = "Point",
-}
-
 export enum TourDifficultyEnum {
   EASY = "easy",
   MEDIUM = "medium",
@@ -13,7 +9,7 @@ export enum TourDifficultyEnum {
 }
 
 export interface ILocation {
-  type: LocationTypeEnum;
+  type: "Point";
   coordinates: number[];
   address: string;
   description: string;
