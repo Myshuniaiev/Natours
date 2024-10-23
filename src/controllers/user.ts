@@ -1,55 +1,53 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction, Request } from "express";
 
-interface Tour {
-  _id: string;
-  // add other properties of a tour if needed
-}
+import User from "@models/user";
+import AppError from "@utils/appError";
+import catchAsync from "@utils/catchAsync";
+import * as factory from "@controllers/handlerFactory";
+import { filterObj } from "@utils/filterObj";
 
-const tours: Tour[] = []; // This should be populated with tour data
-
-export const checkId = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-  value: string
-): void => {
-  const isExist = tours.find((tour) => tour._id === value);
-  if (!isExist) {
-    res.status(404).json({
-      status: "fail",
-      message: "Invalid ID.",
-    });
-    return;
-  }
+export const getMe = (req: Request, _res: Response, next: NextFunction) => {
+  req.params.id = req.user.id;
   next();
 };
 
-export const getUsers = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+export const updateMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (req.body.password || req.body.passwordConfirm) {
+      return next(
+        new AppError(
+          "This route is not for password updates. Please use /updatePassword route.",
+          400
+        )
+      );
+    }
 
-export const getUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+    const filteredBody = filterObj(req.body, "name", "email");
+    const user = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+      new: true,
+      runValidators: true,
+    });
 
-export const createUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+    res.status(200).json({
+      status: "success",
+      data: { user },
+    });
+  }
+);
 
-export const updateUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+export const deleteMe = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    await User.findByIdAndUpdate(req.user.id, { active: false });
 
-export const deleteUser = (req: Request, res: Response): void => {
-  res
-    .status(500)
-    .json({ status: "error", message: "This route is not yet defined." });
-};
+    res.status(204).json({
+      status: "success",
+      data: null,
+    });
+  }
+);
+
+export const getUsers = factory.getAll(User);
+export const getUser = factory.getOne(User);
+export const createUser = factory.createOne(User);
+export const updateUser = factory.updateOne(User);
+export const deleteUser = factory.deleteOne(User);

@@ -1,11 +1,27 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
     "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es6",
     "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist"
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["src/mytypes", "./node_modules/@types"],
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "@models/*": ["src/models/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@routes/*": ["src/routes/*"],
+      "@utils/*": ["src/utils/*"],
+      "@mytypes/*": ["src/mytypes/*"]
+    },
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
-  "lib": ["es2015"]
+  "exclude": ["node_modules", "dist"],
+  "include": ["src/**/*.ts", "src/mytypes/express.d.ts"]
 }

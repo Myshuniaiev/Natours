@@ -1,20 +1,54 @@
 import express, { Router } from "express";
-import * as controller from "../controllers/tour";
+
+import * as tourController from "@controllers/tour";
+import * as authController from "@controllers/auth";
+import reviewRouter from "@routes/review";
 
 const router: Router = express.Router();
 
-router.route("/top-tours").get(controller.aliasTopTours, controller.getTours);
+router.use("/:tourId/reviews", reviewRouter);
 
-router.route("/tour-stats").get(controller.getTourStats);
+router
+  .route("/top-tours")
+  .get(tourController.aliasTopTours, tourController.getTours);
+router.route("/tour-stats").get(tourController.getTourStats);
+router
+  .route("/monthly-plan/:year")
+  .get(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide", "guide"),
+    tourController.getMonthlyPlan
+  );
 
-router.route("/monthly-plan/:year").get(controller.getMonthlyPlan);
+router
+  .route("/tours-within/:distance/center/:latlng/unit/:unit")
+  .get(tourController.getToursWithin);
 
-router.route("/").get(controller.getTours).post(controller.createTour);
+router
+  .route("/distances/:latlng/unit/:unit")
+  .get(tourController.getDistances);
+
+router
+  .route("/")
+  .get(tourController.getTours)
+  .post(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
+    tourController.createTour
+  );
 
 router
   .route("/:id")
-  .get(controller.getTour)
-  .patch(controller.updateTour)
-  .delete(controller.deleteTour);
+  .get(tourController.getTour)
+  .patch(
+    tourController.updateTour,
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide")
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo("admin", "lead-guide"),
+    tourController.deleteTour
+  );
 
 export default router;
