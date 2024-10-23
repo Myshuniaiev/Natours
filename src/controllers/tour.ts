@@ -92,6 +92,42 @@ export const getToursWithin = catchAsync(
   }
 );
 
+export const getDistances = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+
+    if (!lat || !lng) {
+      next(new AppError("Please provide in a format lat,lng", 400));
+    }
+
+    const distances = await Tour.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: "Point",
+            coordinates: [Number(lng), Number(lat)],
+          },
+          distanceField: "distance",
+          distanceMultiplier: unit === "mi" ? 0.000621371 : 0.001,
+        },
+      },
+      {
+        $project: {
+          distance: 1,
+          name: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      results: distances.length,
+      data: { data: distances },
+    });
+  }
+);
+
 export const getTours = factory.getAll(Tour);
 export const getTour = factory.getOne(Tour, { path: "reviews" });
 export const createTour = factory.createOne(Tour);
