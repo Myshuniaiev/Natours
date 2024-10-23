@@ -1,5 +1,5 @@
 {
-  "name": "natours",
+  "name": "mitravel",
   "version": "1.0.0",
   "description": "Secure user authentication and authorization, Comprehensive account and data management, Easy tour booking and integrated review system, Secure payment processing through RESTful APIs",
   "main": "dist/server.js",
