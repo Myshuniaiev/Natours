@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
+
 import catchAsync from "@utils/catchAsync";
+import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import * as factory from "@controllers/handlerFactory";
 
@@ -64,6 +66,29 @@ export const getMonthlyPlan = catchAsync(
     res
       .status(200)
       .json({ status: "success", results: stats.length, data: { stats } });
+  }
+);
+
+export const getToursWithin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const { distance, latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(",");
+
+    const radius =
+      unit === "miles" ? Number(distance) / 3963.2 : Number(distance) / 6378.1;
+
+    if (!lat || !lng) {
+      next(new AppError("Please provide in a format lat,lng", 400));
+    }
+
+    const tours = await Tour.find({
+      startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+    });
+    res.status(200).json({
+      status: "success",
+      results: tours.length,
+      data: { data: tours },
+    });
   }
 );
 

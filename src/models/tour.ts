@@ -154,6 +154,7 @@ tourSchema.pre(/^find/, function (this: Query<ITour, Document>, next) {
 
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: "2dsphere" });
 
 // Virtual population
 tourSchema.virtual("reviews", {
