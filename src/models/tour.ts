@@ -53,8 +53,12 @@ const tourSchema: Schema<ITour> = new mongoose.Schema(
     priceDiscount: {
       type: Number,
       validate: {
-        validator: function (this: ITour, val: number) {
-          return val < this.price;
+        validator: (val: number) => {
+          const price = (this as ITour | undefined)?.price;
+          if (price !== undefined) {
+            return val < price;
+          }
+          return true;
         },
         message: "Discount price ({VALUE}) should be below regular price",
       },
