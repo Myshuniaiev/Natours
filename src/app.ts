@@ -1,11 +1,12 @@
 import express, { Application, Request, Response, NextFunction } from "express";
+import cors from "cors";
 import xss from "xss";
 import path from "path";
 import morgan from "morgan";
 import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import helmet from "helmet";
-import { rateLimit } from "express-rate-limit";
+// import { rateLimit } from "express-rate-limit";
 
 import AppError from "@utils/appError";
 
@@ -17,6 +18,12 @@ import { globalErrorHandler } from "@controllers/error";
 
 const app: Application = express();
 
+// Use CORS middleware
+app.use(
+  cors({
+    origin: "http://localhost:3000", // or use '*' for all origins, but it's safer to specify
+  })
+);
 // Middleware to set security HTTP headers
 app.use(helmet());
 
@@ -26,16 +33,16 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // Rate limiting to protect against DDoS and brute-force attacks
-const limiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 60-minute window
-  max: 100, // Limit each IP to 100 requests per window (to avoid abuse)
-  message: "Too many requests from this IP, please try again after an hour", // Friendly error message for users
-  standardHeaders: true, // Enable standard rate limit headers for clients
-  legacyHeaders: false, // Disable legacy X-RateLimit-* headers
-});
+// const limiter = rateLimit({
+//   windowMs: 60 * 60 * 1000, // 60-minute window
+//   max: 100, // Limit each IP to 100 requests per window (to avoid abuse)
+//   message: "Too many requests from this IP, please try again after an hour", // Friendly error message for users
+//   standardHeaders: true, // Enable standard rate limit headers for clients
+//   legacyHeaders: false, // Disable legacy X-RateLimit-* headers
+// });
 
 // Apply rate limiter to all API routes
-app.use("/api", limiter);
+// app.use("/api", limiter);
 
 // Middleware to parse incoming JSON payloads
 app.use(express.json({ limit: "10kb" }));
