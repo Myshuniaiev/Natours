@@ -71,9 +71,12 @@ export const getAll = <T extends Document>(Model: Model<T>) =>
 
     const doc = await features.query;
 
+    const totalCount = await Model.countDocuments(filter);
+
     res.status(200).json({
       status: "success",
       results: doc.length,
+      totalCount,
       data: { data: doc },
     });
   });
