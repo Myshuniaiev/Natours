@@ -6,6 +6,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
+import cors from "cors";
 
 import AppError from "@utils/appError";
 
@@ -16,6 +17,8 @@ import reviewRouter from "@routes/review";
 import { globalErrorHandler } from "@controllers/error";
 
 const app: Application = express();
+
+app.use(cors());
 
 // Middleware to set security HTTP headers
 app.use(helmet());
