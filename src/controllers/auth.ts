@@ -37,7 +37,7 @@ const createAndSendToken = (user: IUser, statusCode: number, res: Response) => {
   res.status(statusCode).json({
     status: "success",
     token,
-    data: { user },
+    data: { data: user },
   });
 };
 
@@ -58,7 +58,6 @@ export const signup = catchAsync(
 export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return next(
         new AppError("Both email and password are required fields", 400)
