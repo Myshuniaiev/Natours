@@ -1,8 +1,9 @@
-import catchAsync from "@utils/catchAsync";
-import AppError from "@utils/appError";
 import { NextFunction, Request, Response } from "express";
 import { Document, Model, PopulateOptions } from "mongoose";
 import { IRequestWithBody } from "@mytypes/express";
+import catchAsync from "@utils/catchAsync";
+import AppError from "@utils/appError";
+import { getPhotoUrl } from "@utils/s3Utils"; // or your function that returns a URL
 import APIFeatures from "@utils/apiFeatures";
 
 export const deleteOne = <T extends Document>(Model: Model<T>) =>
@@ -52,6 +53,13 @@ export const getOne = <T extends Document>(
       if (!doc) {
         return next(new AppError("No doc found with that ID", 404));
       }
+
+      if ("photoName" in doc && typeof doc.get("photoName") === "string") {
+        const photoName = doc.get("photoName") as string;
+        const url = await getPhotoUrl(photoName);
+        doc.set("photoUrl", url);
+      }
+
       res.status(200).json({ status: "success", data: { data: doc } });
     }
   );
@@ -70,7 +78,6 @@ export const getAll = <T extends Document>(Model: Model<T>) =>
       .paginate();
 
     const doc = await features.query;
-
     const totalCount = await Model.countDocuments(filter);
 
     res.status(200).json({

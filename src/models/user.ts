@@ -2,10 +2,8 @@ import mongoose, { Schema, Model } from "mongoose";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-
 import { IUser, UserRoleEnum } from "@mytypes/user";
 
-// Schema definition
 const userSchema: Schema<IUser> = new mongoose.Schema(
   {
     name: {
@@ -19,8 +17,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, "Provide a valid email address"],
     },
-    photo: {
+    photoName: {
       type: String,
+      // The actual file/key stored in S3
+      default: "",
+    },
+    photoUrl: {
+      type: String,
+      // The accessible URL (could be a presigned or public URL)
+      default: "",
     },
     role: {
       type: String,
@@ -60,31 +65,26 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
   }
 );
 
-// Hash the password before saving to the database
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
 });
 
-// Update passwordChangedAt when the password is changed
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
-
   this.passwordChangedAt = new Date(Date.now() - 1000);
   next();
 });
 
-// Only find users with active set to true
+// Only find users with active = true
 userSchema.pre(/^find/, function (next) {
   // @ts-ignore
   this.find({ active: { $ne: false } });
   next();
 });
 
-// Check if the provided password is correct
 userSchema.methods.correctPassword = async function (
   candidatePassword: string,
   userPassword: string
@@ -92,31 +92,24 @@ userSchema.methods.correctPassword = async function (
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-// Check if the password was changed after the token was issued
 userSchema.methods.changedPasswordAfter = function (
   JwtTimestamp: number
 ): boolean {
   if (!this.passwordChangedAt) return false;
-
   const changedTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
   return JwtTimestamp < changedTimestamp;
 };
 
-// Create and return a password reset token
 userSchema.methods.createPasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(32).toString("hex");
-
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-
   return resetToken;
 };
 
-// Model creation
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
-
 export default User;
