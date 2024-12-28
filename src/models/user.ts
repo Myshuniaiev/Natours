@@ -17,14 +17,8 @@ const userSchema: Schema<IUser> = new mongoose.Schema(
       lowercase: true,
       validate: [validator.isEmail, "Provide a valid email address"],
     },
-    photoName: {
+    photo: {
       type: String,
-      // The actual file/key stored in S3
-      default: "",
-    },
-    photoUrl: {
-      type: String,
-      // The accessible URL (could be a presigned or public URL)
       default: "",
     },
     role: {

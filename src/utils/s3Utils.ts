@@ -17,7 +17,7 @@ function ensureEnvVars() {
 }
 
 export async function getPhotoUrl(key: string) {
-  const s3 = getS3Client(); // define or reuse your getS3Client() logic
+  const s3 = getS3Client();
   const command = new GetObjectCommand({
     Bucket: process.env.BUCKET_NAME,
     Key: key,
@@ -48,7 +48,7 @@ export async function deleteS3Object(key: string) {
 
 export async function uploadResizedImage(
   file: Express.Multer.File,
-  userId: string
+  id: string
 ) {
   ensureEnvVars();
   const s3 = getS3Client();
@@ -58,18 +58,16 @@ export async function uploadResizedImage(
     .resize({ width: 500, height: 500, fit: "cover" })
     .toBuffer();
 
-  const photoName = `user-${userId}-${Date.now()}.jpeg`;
+  const photo = `user-${id}-${Date.now()}.jpeg`;
 
   await s3.send(
     new PutObjectCommand({
       Bucket: BUCKET_NAME!,
-      Key: photoName,
+      Key: photo,
       Body: buffer,
       ContentType: file.mimetype,
     })
   );
 
-  const photoUrl = await getPhotoUrl(photoName);
-
-  return { photoName, photoUrl };
+  return { photo };
 }
