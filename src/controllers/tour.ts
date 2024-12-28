@@ -4,6 +4,9 @@ import catchAsync from "@utils/catchAsync";
 import AppError from "@utils/appError";
 import Tour from "@models/tour";
 import * as factory from "@controllers/handlerFactory";
+import { getPhotoUrl } from "@utils/s3Utils";
+import APIFeatures from "@utils/apiFeatures";
+import { ITour } from "@mytypes/tour";
 
 export const aliasTopTours = (
   req: Request,
@@ -128,8 +131,66 @@ export const getDistances = catchAsync(
   }
 );
 
-export const getTours = factory.getAll(Tour);
-export const getTour = factory.getOne(Tour, { path: "reviews" });
+export const getTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const tour = await Tour.findById(req.params.id).populate({
+      path: "reviews",
+    });
+
+    if (!tour) {
+      return next(new AppError("No tour found with that ID", 404));
+    }
+
+    // Transform the imageCover field
+    const tourObject = tour.toObject();
+    if (tourObject.imageCover) {
+      tourObject.imageCover = await getPhotoUrl(tourObject.imageCover);
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        data: tourObject,
+      },
+    });
+  }
+);
+
+export const getTours = catchAsync(
+  async (req: Request, res: Response): Promise<void> => {
+    let filter = {};
+    if (req.params.tourId) {
+      filter = { tour: req.params.tourId };
+    }
+
+    const features = new APIFeatures<ITour>(Tour.find(filter), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+
+    const tours = await features.query;
+    const totalCount = await Tour.countDocuments(filter);
+
+    const transformedTours = await Promise.all(
+      tours.map(async (tour) => {
+        const tourObject = tour.toObject();
+        if (tourObject.imageCover) {
+          tourObject.imageCover = await getPhotoUrl(tourObject.imageCover);
+        }
+        return tourObject;
+      })
+    );
+
+    res.status(200).json({
+      status: "success",
+      results: transformedTours.length,
+      totalCount,
+      data: { data: transformedTours },
+    });
+  }
+);
+
 export const createTour = factory.createOne(Tour);
 export const updateTour = factory.updateOne(Tour);
 export const deleteTour = factory.deleteOne(Tour);

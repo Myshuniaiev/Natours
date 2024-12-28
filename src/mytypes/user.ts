@@ -10,7 +10,7 @@ export enum UserRoleEnum {
 export interface IUser extends Document {
   name: string;
   email: string;
-  photo: string;
+  photo: string | undefined;
   role: UserRoleEnum;
   password: string;
   passwordConfirm: string | undefined;
