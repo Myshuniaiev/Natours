@@ -22,6 +22,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.ts", "src/mytypes/express.d.ts", "tests/**/*.ts"]
+  "exclude": ["node_modules", "dist", "tests/**/*.ts"],
+  "include": ["src/**/*.ts", "src/mytypes/express.d.ts"]
 }
