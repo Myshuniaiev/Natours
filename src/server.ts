@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import app from "./app";
+import 'module-alias/register';
 
 process.on("uncaughtException", (err: Error) => {
   console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
