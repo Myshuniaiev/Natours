@@ -1,15 +1,16 @@
 import mongoose from "mongoose";
+import "module-alias/register";
+
 import dotenv from "dotenv";
+dotenv.config({ path: "./config.env" });
+
 import app from "./app";
-import 'module-alias/register';
 
 process.on("uncaughtException", (err: Error) => {
   console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
   console.error(err.name, err.message);
   process.exit(1);
 });
-
-dotenv.config({ path: "./config.env" });
 
 const DB = process.env.DATABASE_URL?.replace(
   "<db_password>",
