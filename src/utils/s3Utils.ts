@@ -22,7 +22,7 @@ export async function getPhotoUrl(key: string) {
     Bucket: process.env.BUCKET_NAME,
     Key: key,
   });
-  return getSignedUrl(s3, command, { expiresIn: 60 });
+  return getSignedUrl(s3, command, { expiresIn: 300 });
 }
 
 function getS3Client(): S3Client {
